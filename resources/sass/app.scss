@@ -1,0 +1,66 @@
+@import 'bootstrap/scss/bootstrap';
+@import 'variables';
+
+// @import '~sweetalert2/dist/sweetalert2';
+// @import '~@fortawesome/fontawesome-svg-core/styles';
+
+@import 'elements/card';
+@import 'elements/navbar';
+@import 'elements/buttons';
+@import 'elements/transitions';
+
+@import 'components/server-error';
+
+.rounded-3 {
+    border-radius: 2rem !important;
+}
+
+body, html{ 
+    font-family: 'Inter' !important;
+}
+
+$mynewcolor:#ffc864;
+
+.btn-primary {
+    @include button-variant($mynewcolor, darken($mynewcolor, 7.5%), #7a280d, lighten($mynewcolor,5%), lighten($mynewcolor, 10%), darken($mynewcolor,30%));
+}
+    
+.btn-outline-primary {
+    @include button-outline-variant($mynewcolor, #222222, lighten($mynewcolor,5%), $mynewcolor);
+}
+
+.btn-secondary {
+    background-color: var(--bs-gray-100);
+    border-color: var(--bs-gray-100);
+    color: var(--bs-gray-700);
+    transition: color .2s ease;
+}
+
+a, .logo {
+    color:  #dd5d02;
+}
+
+img.logo {
+    width: 35px;
+}
+
+.hero-icon {
+    height: 16px;
+    width: 16px;
+}
+
+
+.has-upvoted, .btn-upvote:hover, button:disabled.has-upvoted, button:disabled.btn-upvote:hover {
+    color: #dd5d02;
+    opacity: 1;
+  }
+
+  .has-downvoted, .btn-downvote:hover, button:disabled.has-downvoted, button:disabled.btn-downvoted:hover {
+    color: #6A5CFF;
+    opacity: 1;
+  }
+
+  .has-favorited, .btn-favorited:hover, button:disabled.has-favorited, button:disabled.has-favorited:hover {
+    color: #F8285A;
+    opacity: 1;
+  }

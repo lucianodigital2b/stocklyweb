@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Resources\ProductResource;
+use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
+
+class ProductController extends Controller
+{
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
+    /**
+     * Store a new product.
+     *
+     * @param StoreProductRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreProductRequest $request): JsonResponse
+    {
+        // Create the product with meta data
+        $product = $this->productService->createProduct(
+            $request->validated(),
+            $request->input('meta', [])
+        );
+
+        // Return the product resource
+        return response()->json([
+            'data' => new ProductResource($product),
+        ], 201);
+    }
+
+    /**
+     * Get a product by ID.
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function show(int $id): JsonResponse
+    {
+        $product = $this->productService->getProduct($id);
+
+        return response()->json([
+            'data' => new ProductResource($product),
+        ]);
+    }
+
+    /**
+     * Update an existing product.
+     *
+     * @param UpdateProductRequest $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function update(UpdateProductRequest $request, int $id): JsonResponse
+    {
+        // Update the product with meta data
+        $product = $this->productService->updateProduct(
+            $id,
+            $request->validated(),
+            $request->input('meta', [])
+        );
+
+        // Return the updated product resource
+        return response()->json([
+            'data' => new ProductResource($product),
+        ]);
+    }
+
+    /**
+     * Delete a product.
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        // Delete the product
+        $this->productService->deleteProduct($id);
+
+        // Return a 204 No Content response
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Update product meta.
+     *
+     * @param int $id
+     * @param string $key
+     * @return JsonResponse
+     */
+    public function updateMeta(int $id, string $key): JsonResponse
+    {
+        // Update the product meta
+        $meta = $this->productService->updateProductMeta(
+            $id,
+            $key,
+            request()->input('value')
+        );
+
+        // Return the updated meta
+        return response()->json([
+            'data' => $meta,
+        ]);
+    }
+
+    /**
+     * Delete product meta.
+     *
+     * @param int $id
+     * @param string $key
+     * @return JsonResponse
+     */
+    public function deleteMeta(int $id, string $key): JsonResponse
+    {
+        // Delete the product meta
+        $this->productService->deleteProductMeta($id, $key);
+
+        // Return a 204 No Content response
+        return response()->json(null, 204);
+    }
+}
