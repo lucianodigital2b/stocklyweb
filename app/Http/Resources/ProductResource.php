@@ -13,12 +13,10 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'sku' => $this->sku,
             'price' => $this->price,
+            'description' => $this->description,
             'quantity' => $this->quantity,
             'metas' => $this->whenLoaded('metas', function () {
                 return $this->metas->pluck('value', 'key');
-            }),
-            'variants' => $this->whenLoaded('variants', function () {
-                return ProductVariantResource::collection($this->variants);
             }),
             'inventory' => $this->whenLoaded('inventory', function () {
                 return new InventoryResource($this->inventory);

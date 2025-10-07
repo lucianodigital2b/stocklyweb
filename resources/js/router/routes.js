@@ -26,6 +26,12 @@ export default [
     component: () => import('../pages/products/ProductForm.vue'),
     meta: { layout: 'AppLayout' }
   },
+  {
+    path: '/products/:id/edit',
+    name: 'products.edit',
+    component: () => import('../pages/products/ProductForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
 
   {
     path: '/settings',

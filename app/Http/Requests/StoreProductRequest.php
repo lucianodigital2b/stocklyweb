@@ -11,7 +11,7 @@ class StoreProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,32 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:100|unique:products,sku',
+            'price' => 'required|numeric|min:0',
+            'description' => 'nullable|string|max:1000',
+            'stock' => 'nullable|integer|min:0',
+            'promotional_price' => 'nullable|numeric|min:0',
+            'description_seo' => 'nullable|string|max:500',
+            'external_code' => 'nullable|string|max:100',
+            'type' => 'nullable|string|in:simple,variable,variation',
+            'weight' => 'nullable|numeric|min:0',
+            'width' => 'nullable|numeric|min:0',
+            'lenght' => 'nullable|numeric|min:0',
+            'height' => 'nullable|numeric|min:0',
+            'status' => 'nullable|string|in:active,archived,draft',
+            'product_visibility_id' => 'nullable|integer|exists:product_visibilities,id',
+            'published_at' => 'nullable|date',
+            'product_id' => 'nullable|integer|exists:products,id',
+            'pair_id' => 'nullable|integer|exists:products,id',
+            'ean' => 'nullable|string|max:50',
+            'barcode' => 'nullable|string|max:255',
+            'quantityOnShelf' => 'nullable|integer|min:0',
+            'quantityInWarehouse' => 'nullable|integer|min:0',
+            'allowBackorders' => 'nullable|boolean',
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|json',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ];
     }
 }

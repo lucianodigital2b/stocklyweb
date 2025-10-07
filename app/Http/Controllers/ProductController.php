@@ -41,40 +41,8 @@ class ProductController extends Controller
 
         $products = $this->productService->list($args);
         
-        // Transform products for API response
-        $transformedProducts = $products->map(function($product) {
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price ?? 0,
-                'category' => $product->categories->first()->name ?? 'Uncategorized',
-                'rating' => rand(3, 5), // Mock rating for now
-                'inventoryStatus' => $this->getInventoryStatus($product),
-                'image' => 'bamboo-watch.jpg' // Mock image for now
-            ];
-        });
-        
-
-        dd($transformedProducts);
-        return response()->json([
-            'data' => $transformedProducts,
-            'current_page' => $products->currentPage(),
-            'last_page' => $products->lastPage(),
-            'per_page' => $products->perPage(),
-            'total' => $products->total(),
-            'from' => $products->firstItem(),
-            'to' => $products->lastItem()
-        ]);
-    }
-    
-    /**
-     * Get inventory status based on product data
-     */
-    private function getInventoryStatus($product)
-    {
-        // Mock inventory status logic - you can implement actual logic based on your inventory system
-        $statuses = ['INSTOCK', 'LOWSTOCK', 'OUTOFSTOCK'];
-        return $statuses[array_rand($statuses)];
+        // Return raw paginated products without transformation
+        return response()->json($products);
     }
 
     /**
@@ -91,10 +59,8 @@ class ProductController extends Controller
             $request->input('meta', [])
         );
 
-        // Return the product resource
-        return response()->json([
-            'data' => new ProductResource($product),
-        ], 201);
+        // Return the product resource directly without wrapping in data
+        return response()->json(new ProductResource($product), 201);
     }
 
     /**
@@ -107,9 +73,7 @@ class ProductController extends Controller
     {
         $product = $this->productService->getProduct($id);
 
-        return response()->json([
-            'data' => new ProductResource($product),
-        ]);
+        return response()->json(new ProductResource($product));
     }
 
     /**
@@ -156,19 +120,19 @@ class ProductController extends Controller
      * @param string $key
      * @return JsonResponse
      */
-    public function updateMeta(int $id, string $key): JsonResponse
+    public function updateMeta(int $id, string $key)
     {
         // Update the product meta
-        $meta = $this->productService->updateProductMeta(
-            $id,
-            $key,
-            request()->input('value')
-        );
+        // $meta = $this->productService->updateProductMeta(
+        //     $id,
+        //     $key,
+        //     request()->input('value')
+        // );
 
-        // Return the updated meta
-        return response()->json([
-            'data' => $meta,
-        ]);
+        // // Return the updated meta
+        // return response()->json([
+        //     'data' => $meta,
+        // ]);
     }
 
     /**
@@ -181,7 +145,7 @@ class ProductController extends Controller
     public function deleteMeta(int $id, string $key): JsonResponse
     {
         // Delete the product meta
-        $this->productService->deleteProductMeta($id, $key);
+        // $this->productService->deleteProductMeta($id, $key);
 
         // Return a 204 No Content response
         return response()->json(null, 204);

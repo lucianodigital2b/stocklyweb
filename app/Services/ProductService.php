@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\ProductVariant;
+use App\Models\Store;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +13,7 @@ class ProductService
 
     public function list($data = []) 
     {
-        $products = Product::with('stores');
+        $products = Product::with('store');
 
         if (isset($data['q'])) {
             if(isset($data['q']) && !empty($data['q'])) {   
@@ -24,26 +24,26 @@ class ProductService
             }
         }
 
-        if(array_key_exists('parent_id', $data)) {
-            if(is_null($data['parent_id'])) {
-                $products->whereNull('product_id');
-            }
-            else if(is_array($data['parent_id'])) {
-                $products->whereIn('product_id', $data['parent_id']);
-            } else {
-                $products->where('product_id', $data['parent_id']);
-            }
-        }
+        // if(array_key_exists('parent_id', $data)) {
+        //     if(is_null($data['parent_id'])) {
+        //         $products->whereNull('product_id');
+        //     }
+        //     else if(is_array($data['parent_id'])) {
+        //         $products->whereIn('product_id', $data['parent_id']);
+        //     } else {
+        //         $products->where('product_id', $data['parent_id']);
+        //     }
+        // }
 
-        if(isset($data['category_id']) && !empty($data['category_id'])) {
-            $products = $products->whereHas('categories', function($q) use($data) {
-                $q->where('categories.id', $data['category_id']);
-            });
-        }
+        // if(isset($data['category_id']) && !empty($data['category_id'])) {
+        //     $products = $products->whereHas('categories', function($q) use($data) {
+        //         $q->where('categories.id', $data['category_id']);
+        //     });
+        // }
 
-        if(isset($data['with_children']) && !empty($data['with_children'])) {
-            $products->with('children');
-        }
+        // if(isset($data['with_children']) && !empty($data['with_children'])) {
+        //     $products->with('children');
+        // }
 
         if(isset($data['where'])) {
             foreach ($data['where'] as $field => $value) {
@@ -54,6 +54,8 @@ class ProductService
                 }
             }
         }
+
+        $products = $products->orderBy('id', 'desc');
 
         if(isset($data['limit']) && !empty($data['limit'])) {
             $products = $products->paginate($data['limit']);
@@ -74,7 +76,7 @@ class ProductService
     public function createProduct(array $productData, array $variantsData = []): Product
     {
         DB::beginTransaction();
-
+        
         try {
             // Create the product
             $product = Product::create($productData);
@@ -179,12 +181,12 @@ class ProductService
     /**
      * Get a product by ID with its variants.
      *
-     * @param int $productId
+     * @param int $id
      * @return Product
      */
-    public function getProduct(int $productId): Product
+    public function getProduct(int $id): Product
     {
-        return Product::with(['metas', 'variants', 'inventory', 'categories'])->findOrFail($id);
+        return Product::with(['categories'])->findOrFail($id);
     }
 
     /**
@@ -204,51 +206,5 @@ class ProductService
         }
 
         return $query->paginate($perPage);
-    }
-
-    /**
-     * Add a variant to a product.
-     *
-     * @param int $productId
-     * @param array $variantData
-     * @return ProductVariant
-     */
-    public function addVariant(int $productId, array $variantData): ProductVariant
-    {
-        return ProductVariant::create([
-            'product_id' => $productId,
-            'name' => $variantData['name'],
-            'price' => $variantData['price'],
-            'sku' => $variantData['sku'],
-        ]);
-    }
-
-    /**
-     * Update a product variant.
-     *
-     * @param int $variantId
-     * @param array $variantData
-     * @return ProductVariant
-     */
-    public function updateVariant(int $variantId, array $variantData): ProductVariant
-    {
-        $variant = ProductVariant::findOrFail($variantId);
-        $variant->update($variantData);
-
-        return $variant;
-    }
-
-    /**
-     * Delete a product variant.
-     *
-     * @param int $variantId
-     * @return bool
-     */
-    public function deleteVariant(int $variantId): bool
-    {
-        $variant = ProductVariant::findOrFail($variantId);
-        $variant->delete();
-
-        return true;
     }
 }

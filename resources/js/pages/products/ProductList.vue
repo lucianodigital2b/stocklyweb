@@ -2,10 +2,10 @@
 <template>
     <div class="card">
         <DataTable v-model:filters="filters" v-model:selection="selectedCustomers" :value="products" paginator :rows="perPage" dataKey="id" filterDisplay="menu"
-            :globalFilterFields="['name', 'category', 'price']" :loading="loading" :totalRecords="totalRecords" :lazy="true" @page="onPage" @filter="onFilter">
+            :globalFilterFields="['name', 'sku', 'price']" :loading="loading" :totalRecords="totalRecords" :lazy="true" @page="onPage" @filter="onFilter">
             <template #header>
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="text-xl font-bold">Products</span>
+                    <span class="text-xl font-bold">Produtos</span>
 
                     <div class="flex gap-3">
                         <IconField>
@@ -21,30 +21,48 @@
                 </div>
                 
             </template>
-            <Column field="name" header="Name">
-            
+            <Column field="name" header="Nome">
                 <template #body="slotProps">
                     <div class="flex gap-3 items-center">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="w-24 rounded" />
-                        <div>{{slotProps.data.name}}</div>
+                        <div class="w-24 h-16 bg-gray-200 rounded flex items-center justify-center">
+                            <i class="pi pi-image text-gray-400"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">{{ slotProps.data.name }}</div>
+                            <div class="text-sm text-gray-500">SKU: {{ slotProps.data.sku }}</div>
+                        </div>
                     </div>
                 </template>
             </Column>
 
-            <Column field="price" header="Price">
+            <Column field="price" header="Preço">
                 <template #body="slotProps">
-                    {{ formatCurrency(slotProps.data.price) }}
+                    {{ formatCurrency(slotProps.data.price || 0) }}
                 </template>
             </Column>
-            <Column field="category" header="Category"></Column>
-            <Column field="rating" header="Reviews">
+            <Column field="description" header="Descrição">
                 <template #body="slotProps">
-                    <Rating :modelValue="slotProps.data.rating" readonly />
+                    <div class="max-w-xs truncate">
+                        {{ slotProps.data.description || 'Sem descrição' }}
+                    </div>
                 </template>
             </Column>
-            <Column header="Status">
+            <Column header="Ações">
                 <template #body="slotProps">
-                    <Tag :value="slotProps.data.inventoryStatus" :severity="getSeverity(slotProps.data)" />
+                    <div class="flex gap-2">
+                        <Button 
+                            icon="pi pi-pencil" 
+                            size="small" 
+                            severity="secondary"
+                            @click="$router.push({ name: 'products.edit', params: { id: slotProps.data.id } })"
+                        />
+                        <Button 
+                            icon="pi pi-trash" 
+                            size="small" 
+                            severity="danger"
+                            @click="deleteProduct(slotProps.data.id)"
+                        />
+                    </div>
                 </template>
             </Column>
             <template #footer> {{ totalRecords }} produtos encontrados. </template>
@@ -85,6 +103,7 @@ const loadProducts = async (page = 1, search = '') => {
         
         const response = await axios.get('/api/products', { params });
         
+        // Handle raw paginated response from Laravel
         products.value = response.data.data;
         totalRecords.value = response.data.total;
         currentPage.value = response.data.current_page;
@@ -121,22 +140,19 @@ const onFilter = () => {
 };
 
 const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
-const getSeverity = (product) => {
-    switch (product.inventoryStatus) {
-        case 'INSTOCK':
-            return 'success';
-
-        case 'LOWSTOCK':
-            return 'warn';
-
-        case 'OUTOFSTOCK':
-            return 'danger';
-
-        default:
-            return null;
+const deleteProduct = async (productId) => {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+        try {
+            await axios.delete(`/api/products/${productId}`);
+            // Reload products after deletion
+            loadProducts(currentPage.value, searchQuery.value);
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Falha ao excluir produto. Tente novamente.');
+        }
     }
 };
 </script>
