@@ -85,6 +85,7 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, int $id): JsonResponse
     {
+
         // Update the product with meta data
         $product = $this->productService->updateProduct(
             $id,

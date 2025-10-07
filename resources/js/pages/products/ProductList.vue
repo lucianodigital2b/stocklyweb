@@ -40,6 +40,24 @@
                     {{ formatCurrency(slotProps.data.price || 0) }}
                 </template>
             </Column>
+            
+            <Column field="stock" header="Estoque">
+                <template #body="slotProps">
+                    <div class="flex items-center gap-2">
+                        <span :class="getStockClass(slotProps.data.stock)">
+                            {{ slotProps.data.stock || 0 }}
+                        </span>
+                        <i v-if="(slotProps.data.stock || 0) <= 5" class="pi pi-exclamation-triangle text-orange-500" title="Estoque baixo"></i>
+                    </div>
+                </template>
+            </Column>
+            
+            <Column field="status" header="Status">
+                <template #body="slotProps">
+                    <Tag :value="getStatusLabel(slotProps.data.status)" :severity="getStatusSeverity(slotProps.data.status)" />
+                </template>
+            </Column>
+            
             <Column field="description" header="Descrição">
                 <template #body="slotProps">
                     <div class="max-w-xs truncate">
@@ -73,8 +91,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Button from "primevue/button";
-import axios from 'axios';
+import Tag from "primevue/tag";
+import { useToast } from 'primevue/usetoast';
+import axios from '../../plugins/axios';
 
+const toast = useToast();
 const selectedCustomers = ref();
 const filters = ref();
 const products = ref([]);
@@ -143,15 +164,58 @@ const formatCurrency = (value) => {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
+const getStatusLabel = (status) => {
+    const statusMap = {
+        'active': 'Ativo',
+        'draft': 'Rascunho',
+        'archived': 'Arquivado'
+    };
+    return statusMap[status] || status;
+};
+
+const getStatusSeverity = (status) => {
+    const severityMap = {
+        'active': 'success',
+        'draft': 'warning',
+        'archived': 'secondary'
+    };
+    return severityMap[status] || 'info';
+};
+
+const getStockClass = (stock) => {
+    const stockValue = stock || 0;
+    if (stockValue === 0) {
+        return 'text-red-600 font-semibold';
+    } else if (stockValue <= 5) {
+        return 'text-orange-600 font-semibold';
+    } else {
+        return 'text-green-600 font-semibold';
+    }
+};
+
 const deleteProduct = async (productId) => {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
         try {
             await axios.delete(`/api/products/${productId}`);
+            
+            toast.add({
+                severity: 'success',
+                summary: 'Sucesso',
+                detail: 'Produto excluído com sucesso!',
+                life: 3000
+            });
+            
             // Reload products after deletion
             loadProducts(currentPage.value, searchQuery.value);
         } catch (error) {
             console.error('Error deleting product:', error);
-            alert('Falha ao excluir produto. Tente novamente.');
+            
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: error.response?.data?.message || 'Falha ao excluir produto. Tente novamente.',
+                life: 5000
+            });
         }
     }
 };

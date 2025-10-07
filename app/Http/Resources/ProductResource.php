@@ -9,12 +9,7 @@ class ProductResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'sku' => $this->sku,
-            'price' => $this->price,
-            'description' => $this->description,
-            'quantity' => $this->quantity,
+            ...$this->resource->toArray(),
             'metas' => $this->whenLoaded('metas', function () {
                 return $this->metas->pluck('value', 'key');
             }),

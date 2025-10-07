@@ -21,12 +21,13 @@ return new class extends Migration
             $table->decimal('width', 15, 2)->nullable()->after('weight');
             $table->decimal('lenght', 15, 2)->nullable()->after('width');
             $table->decimal('height', 15, 2)->nullable()->after('lenght');
-            $table->enum('status', ['active', 'inactive', 'draft'])->default('active')->after('height');
+            $table->enum('status', ['active', 'draft', 'archived'])->default('active')->after('height');
             $table->unsignedBigInteger('product_visibility_id')->nullable()->after('status');
             $table->timestamp('published_at')->nullable()->after('product_visibility_id');
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade')->after('published_at');
             $table->foreignId('pair_id')->nullable()->constrained('products')->onDelete('set null')->after('product_id');
             $table->string('ean')->nullable()->after('pair_id');
+            $table->boolean('allow_backorders')->nullable();
         });
     }
 
@@ -53,7 +54,8 @@ return new class extends Migration
                 'published_at',
                 'product_id',
                 'pair_id',
-                'ean'
+                'ean',
+                'allow_backorders'
             ]);
         });
     }

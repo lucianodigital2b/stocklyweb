@@ -123,7 +123,6 @@ class ProductService
         try {
             // Find the product
             $product = Product::findOrFail($productId);
-
             // Update product data
             $product->update($productData);
 
@@ -162,10 +161,6 @@ class ProductService
             // Find the product
             $product = Product::findOrFail($productId);
 
-            // Delete associated variants
-            $product->variants()->delete();
-
-            // Delete the product
             $product->delete();
 
             DB::commit();

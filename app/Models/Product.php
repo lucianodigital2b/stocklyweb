@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
     
@@ -30,10 +31,7 @@ class Product extends Model
         'product_id',
         'pair_id',
         'ean',
-        'barcode',
-        'quantityOnShelf',
-        'quantityInWarehouse',
-        'allowBackorders',
+        'allow_backorders',
     ];
 
     const PRODUCT_TYPES = [

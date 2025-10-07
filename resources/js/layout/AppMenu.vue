@@ -42,14 +42,14 @@ const model = ref([
                         label: 'Categorias',
                         to: '/products/create'
                     },
-                    {
-                        label: 'Atributos',
-                        to: '/products/create'
-                    },
-                    {
-                        label: 'Marcas',
-                        to: '/products/create'
-                    },
+                    // {
+                    //     label: 'Atributos',
+                    //     to: '/products/create'
+                    // },
+                    // {
+                    //     label: 'Marcas',
+                    //     to: '/products/create'
+                    // },
                 ]
             },
             {

@@ -85,10 +85,10 @@
 
                   <!-- Barcode -->
                   <div class="field mb-4">
-                    <Label for="barcode">Código de Barras</Label>
+                    <Label for="ean">Código de Barras</Label>
                     <InputText 
-                      id="barcode"
-                      v-model="formData.barcode" 
+                      id="ean"
+                      v-model="formData.ean" 
                       placeholder="Digite o código de barras"
                       class="w-full"
                     />
@@ -98,11 +98,11 @@
                   <!-- Quantity -->
                   <div class="field mb-4">
                     <Label for="quantity">Quantidade</Label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="">
                       <div>
                         <InputNumber 
                           id="quantity_shelf"
-                          v-model="formData.quantityOnShelf" 
+                          v-model="formData.stock" 
                           placeholder="Na prateleira"
                           :min="0"
                           class="w-full"
@@ -117,52 +117,21 @@
                   <div class="field mb-4">
                     <div class="flex align-items-center gap-3">
                       <Checkbox 
-                        id="allowBackorders"
-                        v-model="formData.allowBackorders" 
+                        id="allow_backorders"
+                        v-model="formData.allow_backorders" 
                         :binary="true"
                       />
-                      <Label for="allowBackorders">Permitir Pedidos sem estoque</Label>
+                      <div>
+                        <Label for="allow_backorders">Permitir Pedidos sem estoque</Label>
+                        <small class="text-gray-500">Permitir que os clientes comprem produtos que estão fora de estoque.</small>
+
+                      </div>
                     </div>
-                    <small class="text-gray-500 ml-6">Permitir que os clientes comprem produtos que estão fora de estoque.</small>
                   </div>
                 </div>
 
                
-                <!-- Category -->
-                <div class="field mb-4">
-                  <Label for="category">
-                    Categoria
-                  </Label>
-                  <TreeSelect 
-                    id="category" 
-                    v-model="formData.category" 
-                    :options="categoriesTree" 
-                    placeholder="Selecione uma categoria"
-                    class="w-full"
-                    :class="{ 'p-invalid': errors.category }"
-                  />
-                  <small v-if="errors.category" class="p-error">{{ errors.category }}</small>
-                </div>
-
-                <!-- Tags -->
-                <div class="field mb-4">
-                  <Label for="tags">
-                    Tags
-                  </Label>
-                  <MultiSelect 
-                    id="tags" 
-                    v-model="formData.tags" 
-                    :options="availableTags" 
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Selecione tags"
-                    class="w-full"
-                    :maxSelectedLabels="3"
-                    selectedItemsLabel="{0} tags selecionadas"
-                  />
-                  <small class="text-color-secondary">Adicione tags para facilitar a busca</small>
-                </div>
-
+               
        
               </template>
             </Card>
@@ -225,6 +194,53 @@
                 />
               </div>
             </ToggleCard>
+
+             <ToggleCard 
+              title="Categorias"
+              :toggleable="true"
+              class="mb-4"
+            >
+              <div class="product-status-fields">
+                 <!-- Category -->
+                <div class="field mb-4">
+                  <Label for="category">
+                    Categoria
+                  </Label>
+                  <TreeSelect 
+                    id="category" 
+                    v-model="formData.category" 
+                    :options="categoriesTree" 
+                    placeholder="Selecione uma categoria"
+                    class="w-full"
+                    :class="{ 'p-invalid': errors.category }"
+                  />
+                  <small v-if="errors.category" class="p-error">{{ errors.category }}</small>
+                </div>
+
+                <!-- Tags -->
+                <!-- <div class="field mb-4">
+                  <Label for="tags">
+                    Tags
+                  </Label>
+                  <MultiSelect 
+                    id="tags" 
+                    v-model="formData.tags" 
+                    :options="availableTags" 
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Selecione tags"
+                    class="w-full"
+                    :maxSelectedLabels="3"
+                    selectedItemsLabel="{0} tags selecionadas"
+                  />
+                  <small class="text-color-secondary">Adicione tags para facilitar a busca</small>
+                </div> -->
+
+
+              </div>
+
+            </ToggleCard>
+
 
             <div class="featured-image-section">
               <h4 class="mb-3">Imagem em Destaque</h4>
@@ -308,14 +324,14 @@ const formData = reactive({
   sku: '',
   price: null,
   category: null,
+  stock: 0,
   tags: [],
   description: '',
   inStock: false,
   status: 'draft',
-  barcode: '',
-  quantityOnShelf: 0,
-  quantityInWarehouse: 0,
-  allowBackorders: false
+  ean: '',
+  stock: 0,
+  allow_backorders: false
 });
 
 const errors = reactive({
@@ -428,21 +444,35 @@ const loadProductData = async () => {
         const product = response.data;
         console.log('Product data:', product); // Debug log
         
-        Object.assign(formData, {
+        // Dynamically map product data to formData fields
+        const fieldMappings = {
           name: product.name || '',
           sku: product.sku || '',
           price: product.price || null,
+          description: product.description || '',
+          status: product.status || 'draft',
+          ean: product.ean || '',
+          stock: product.stock,
+          allow_backorders: product.allow_backorders === 1,
+          // Special cases that need custom logic
           category: null, // We'll need to handle categories separately
           tags: [], // We'll need to handle tags separately
-          description: product.description || '',
-          inStock: product.quantity > 0 || false,
-          status: product.status || 'draft'
+        };
+
+        // Only assign fields that exist in formData to avoid adding unwanted properties
+        Object.keys(formData).forEach(key => {
+          if (fieldMappings.hasOwnProperty(key)) {
+            formData[key] = fieldMappings[key];
+          }
         });
         
         // Set featured image preview if exists
         if (product.featured_image) {
           featuredImagePreview.value = product.featured_image;
         }
+
+        console.log(formData);
+        
       }
     } catch (error) {
       console.error('Error loading product:', error);
@@ -461,18 +491,6 @@ const loadProductData = async () => {
 onMounted(() => {
   loadProductData();
 });
-
-// Tags data
-const availableTags = ref([
-  { id: 1, name: 'Novo' },
-  { id: 2, name: 'Promoção' },
-  { id: 3, name: 'Destaque' },
-  { id: 4, name: 'Limitado' },
-  { id: 5, name: 'Sazonal' },
-  { id: 6, name: 'Premium' },
-  { id: 7, name: 'Eco-friendly' },
-  { id: 8, name: 'Artesanal' }
-]);
 
 // Form submission
 const isSubmitting = ref(false);
@@ -514,14 +532,38 @@ const handleSubmit = async () => {
 
   try {
     const submitData = new FormData();
-    submitData.append('name', formData.name);
-    submitData.append('sku', formData.sku);
-    submitData.append('price', formData.price ? formData.price.toString() : '0');
-    submitData.append('category_id', formData.category ? formData.category.toString() : '');
-    submitData.append('description', formData.description || '');
-    submitData.append('status', formData.status || 'draft');
     
-    if (formData.tags.length > 0) {
+    // Define field mappings for backend compatibility (only for fields that need different names)
+    const fieldMappings = {
+      category: 'category_id',
+    };
+
+    // Define fields that need special handling or should be excluded
+    const excludeFields = ['tags', 'inStock']; // inStock is computed, tags handled separately
+    
+    // Automatically convert formData to FormData using Object.entries
+    Object.entries(formData).forEach(([key, value]) => {
+      if (excludeFields.includes(key)) return;
+      
+      const backendFieldName = fieldMappings[key] || key;
+      
+      // Handle different data types
+      if (value === null || value === undefined) {
+        submitData.append(backendFieldName, '');
+      } else if (typeof value === 'boolean') {
+        submitData.append(backendFieldName, value ? '1' : '0');
+      } else if (typeof value === 'number') {
+        submitData.append(backendFieldName, value.toString());
+      } else if (Array.isArray(value)) {
+        // Skip arrays here, handle them separately if needed
+        return;
+      } else {
+        submitData.append(backendFieldName, value);
+      }
+    });
+    
+    // Handle special fields
+    if (formData.tags && formData.tags.length > 0) {
       submitData.append('tags', JSON.stringify(formData.tags));
     }
     
