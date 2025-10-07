@@ -6,6 +6,7 @@ import store from './store';
 import nativeComponents from './components'
 import "bootstrap/dist/js/bootstrap.js";
 // import './echo',
+import './plugins/axios'; // Import axios configuration
 import Aura from '@primevue/themes/aura';
 import PrimeVue from 'primevue/config';
 

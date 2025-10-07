@@ -9,6 +9,61 @@ use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
+
+
+    public function list($data = []) 
+    {
+        $products = Product::with('stores');
+
+        if (isset($data['q'])) {
+            if(isset($data['q']) && !empty($data['q'])) {   
+                $products->where(function($query) use($data) {
+                    $query->where('name', 'LIKE', '%'. $data['q'] . '%');
+                    $query->orWhere('sku', '=', $data['q']);
+                });
+            }
+        }
+
+        if(array_key_exists('parent_id', $data)) {
+            if(is_null($data['parent_id'])) {
+                $products->whereNull('product_id');
+            }
+            else if(is_array($data['parent_id'])) {
+                $products->whereIn('product_id', $data['parent_id']);
+            } else {
+                $products->where('product_id', $data['parent_id']);
+            }
+        }
+
+        if(isset($data['category_id']) && !empty($data['category_id'])) {
+            $products = $products->whereHas('categories', function($q) use($data) {
+                $q->where('categories.id', $data['category_id']);
+            });
+        }
+
+        if(isset($data['with_children']) && !empty($data['with_children'])) {
+            $products->with('children');
+        }
+
+        if(isset($data['where'])) {
+            foreach ($data['where'] as $field => $value) {
+                if (is_array($value)) {
+                    $products = $products->whereIn($field, $value);
+                } else {
+                    $products = $products->where($field, '=', $value);
+                }
+            }
+        }
+
+        if(isset($data['limit']) && !empty($data['limit'])) {
+            $products = $products->paginate($data['limit']);
+        } else {
+            $products = $products->get();
+        }
+        
+        return $products;
+    }
+
     /**
      * Create a new product.
      *

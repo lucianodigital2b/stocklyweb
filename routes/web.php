@@ -5,4 +5,5 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::view('/{any}', 'app')->where('any', '.*');
+// Catch-all route for Vue SPA, but exclude API routes
+Route::view('/{any}', 'app')->where('any', '^(?!api).*$');

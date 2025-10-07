@@ -1,394 +1,482 @@
 <template>
-    <div class="colored-bg">
+  <div class="product-form-container">
+    <form @submit.prevent="handleSubmit" class="w-full">
+      <!-- Loading Skeletons -->
+      <template v-if="isLoadingCategories">
+        <FormSkeleton />
+      </template>
 
-    </div>
-    <div class="col-lg-7 mx-auto my-7">
-        <card class="rounded-4 p-md-3 shadow-sm">
-            <h3 class="mb-5">{{ form.id ? 'Edit Recipe' : 'Create a recipe' }}</h3>
-            <form @submit.prevent="saveRecipe">
-                <div class="row mb-7">
-                    <div class="col-md-7">
-                        <div class="mb-3">
-                            <label>Title</label>
-                            <input v-model="form.title" :class="{ 'is-invalid': form.errors.has('title') }" class="form-control" name="title">
-                            <has-error :form="form" field="title" />
-            
-                        </div>
-                        <div class="mb-3">
-                            <label>Description</label>
-                            
-                            <textarea rows="5" v-model="form.description" :class="{ 'is-invalid': form.errors.has('description') }" class="form-control" name="description"></textarea>
-                            <has-error :form="form" field="description" />
-            
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <label>Thumbnail (optional)</label>
-                        <div class="thumbnail-wrapper position-relative">
-                            <button class="file-input-button " @click.prevent="onPickFile">
-                                <div v-if="!thumbnailPreview" class="input-empty"></div>
-                                <div
-                                    v-if="thumbnailPreview"
-                                    class="image-preview"
-                                    :style="{ backgroundImage: `url(${thumbnailPreview})` }"
-                                >
-                                </div>
-                                
-                            </button>
-                            <button class="btn btn-light clear-thumbnail p-1 py-0" @click.prevent="clearThumbnail" v-if="thumbnailPreview"><XMarkIcon class="hero-icon"></XMarkIcon></button>
-
-                        </div>
-
-                        <div class="text-muted">
-                            <small>
-                                Use JPEG or PNG. Must be at least 960 x 960. Max file size: 30MB
-                            </small>
-                        </div>
-                        <input
-                            type="file"
-                            style="display: none"
-                            ref="thumbnail"
-                            accept=".png, .jpg, .jpeg"
-                            @change="handleFile"
-                        />
-                        <HasError :form="form" field="thumbnail" />
-                    </div>
-                </div>
-                <div class="row">
-                    <h6>Gallery</h6>
-                    <div class="col-md-12">
-
-
-                        <div v-bind="getRootProps()" class="gallery-zone">
-                            <input v-bind="getInputProps()" />
-                            <div v-if="isDragActive">Drop the files here ...</div>
-                            <div v-else>Drag 'n' drop some files here, or click to select files</div>
-                        </div>
-
-                        <div class="recipe-gallery">
-                            <div class="recipe-gallery-item position-relative" v-for="(image, idx) in form.gallery" :key="image">
-                                <img :src="getImage(image)" alt="">
-                                <button class="position-absolute btn-light btn rounded-3 d-flex align-items-center gap-1 justify-content-center rounded-pill p-1 top-0 right-0" @click.prevent="removeGalleryImage(idx)"><XMarkIcon class="hero-icon"></XMarkIcon></button>
-                            </div>
-                        </div>
-                    </div>
+      <!-- Form Content -->
+      <template v-else>
+        <div class="grid">
+          <!-- Left Side - Form Fields -->
+          <div class="col-12 md:col-7">
+            <Card class="form-card">
+              <template #content>
+                <h3 class="mb-4">Informações do Produto</h3>
+                
+                <!-- Product Name -->
+                <div class="field mb-4">
+                  <label for="name" class="block font-medium mb-2">
+                    Nome do Produto *
+                  </label>
+                  <InputText 
+                    id="name" 
+                    v-model="formData.name" 
+                    placeholder="Digite o nome do produto"
+                    class="w-full"
+                    :class="{ 'p-invalid': errors.name }"
+                  />
+                  <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
                 </div>
 
-                <hr>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <h6 class="mb-6">Ingredients</h6>
-                            <div class="text-muted mb-3">
-                                List each ingredient on a separate line, specifying the quantity (e.g., cups, tablespoons) and any necessary preparation (e.g., sifted, softened, chopped)
-                            </div>
-                            <div class="d-flex gap-2 align-items-center mb-3" v-for="ingredient in form.ingredients" :key="ingredient">    
-                                <input v-model="ingredient.name" class="form-control " :placeholder="ingredient.placeholder ?? ''">
-                                <v-button type="light" class="rounded-pill p-1" @click.prevent="removeIngredient"><XMarkIcon class="hero-icon"></XMarkIcon></v-button>
-                            </div>
-
-                            <v-button type="outline-primary" @click.prevent="addIngredient" class="px-7"><PlusIcon class="hero-icon"></PlusIcon> add ingredient</v-button>
-                            <has-error :form="form" field="ingredients" />
-                            
-                        </div>
-                    </div>
+                <!-- Description -->
+                <div class="field mb-4">
+                  <label for="description" class="block font-medium mb-2">
+                    Descrição
+                  </label>
+                  <Textarea 
+                    id="description" 
+                    v-model="formData.description" 
+                    rows="4"
+                    class="w-full"
+                    placeholder="Descrição do produto..."
+                    :maxlength="500"
+                  />
+                  <small class="text-color-secondary">Caracteres: {{ formData.description.length }}/500</small>
                 </div>
-                <hr>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <h6 class="mb-6">Directions</h6>
-                            <div class="text-muted mb-3">
-                                Provide step-by-step instructions for making your recipe, including details like oven temperatures, cooking or baking times, and pan sizes. Use optional headers to organize sections of the process, such as "Prep," "Bake," or "Decorate."
-                            </div>
-                            <div v-for="(step, index) in form.steps" :key="step">
-                                <div for="" class="form-label flex-1">Step {{ index +1 }}</div>
-                                <div class="d-flex gap-2 align-items-center mb-3">
-                                    <input v-model="step.description" class="form-control" :placeholder="step.placeholder ?? ''">
-                                    <v-button type="light" @click.prevent="removeStep" class="rounded-pill p-1"><XMarkIcon class="hero-icon"></XMarkIcon></v-button>
 
-                                </div>
-                            </div>
-                            <v-button type="outline-primary" @click.prevent="addStep"><PlusIcon class="hero-icon"></PlusIcon> add step</v-button>
-                            <has-error :form="form" field="steps" />
-            
-                        </div>
-                    </div>
+                <!-- SKU -->
+                <div class="field mb-4">
+                  <label for="sku" class="block font-medium mb-2">
+                    SKU *
+                  </label>
+                  <InputText 
+                    id="sku"
+                    v-model="formData.sku" 
+                    placeholder="Digite o SKU"
+                    class="w-full"
+                    :class="{ 'p-invalid': errors.sku }"
+                  />
+                  <small v-if="errors.sku" class="p-error">{{ errors.sku }}</small>
                 </div>
-                <hr>
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <label>Prep time</label>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <input placeholder="e.g. 30"  v-model="form.prep_time" :class="{ 'is-invalid': form.errors.has('prep_time') }" class="form-control" name="prep_time" type="number">
-                            <has-error :form="form" field="prep_time" />
-            
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="">
-                            <select name="prep_time_type" id="" class="form-control" v-model="form.prep_time_type">
-                                <option value="1">mins</option>    
-                                <option value="2">hours</option>    
-                                <option value="3">days</option>    
-                            </select>
-                            <has-error :form="form" field="prep_time_type" />
-                        </div>
-                    </div>
+                <!-- Price -->
+                <div class="field mb-4">
+                  <label for="price" class="block font-medium mb-2">
+                    Preço *
+                  </label>
+                  <InputNumber 
+                    id="price" 
+                    v-model="formData.price" 
+                    mode="currency" 
+                    currency="BRL" 
+                    locale="pt-BR"
+                    placeholder="R$0,00"
+                    class="w-full"
+                    :class="{ 'p-invalid': errors.price }"
+                  />
+                  <small v-if="errors.price" class="p-error">{{ errors.price }}</small>
+                </div>
 
-                    <div class="col-md-8 mb-5">
-                        <label>Servings</label>
-                        <input placeholder="e.g. 3"  v-model="form.servings" :class="{ 'is-invalid': form.errors.has('servings') }" class="form-control" name="servings" type="number">
-                        <has-error :form="form" field="servings" />
-                    </div>
-                    
+                <!-- Categories - Cascading -->
+                <div class="field mb-4">
+                  <label for="category" class="block font-medium mb-2">
+                    Categoria *
+                  </label>
+                  <TreeSelect 
+                    id="category" 
+                    v-model="formData.category" 
+                    :options="categoriesTree" 
+                    placeholder="Selecione uma categoria"
+                    class="w-full"
+                    :class="{ 'p-invalid': errors.category }"
+                  />
+                  <small v-if="errors.category" class="p-error">{{ errors.category }}</small>
+                </div>
+
+                <!-- Tags - MultiSelect -->
+                <div class="field mb-4">
+                  <label for="tags" class="block font-medium mb-2">
+                    Tags
+                  </label>
+                  <MultiSelect 
+                    id="tags" 
+                    v-model="formData.tags" 
+                    :options="availableTags" 
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Selecione tags"
+                    class="w-full"
+                    :maxSelectedLabels="3"
+                    selectedItemsLabel="{0} tags selecionadas"
+                  />
+                  <small class="text-color-secondary">Adicione tags para facilitar a busca</small>
+                </div>
+
+                <!-- Submit Button -->
+                <Button 
+                  type="submit" 
+                  :label="isSubmitting ? 'Enviando...' : 'Cadastrar Produto'" 
+                  class="w-full" 
+                  icon="pi pi-check"
+                  :disabled="isSubmitting || isLoadingCategories"
+                />
+              </template>
+            </Card>
+          </div>
+
+          <!-- Divider -->
+          <div class="col-12 md:col-1 flex align-items-center justify-content-center">
+            <div class="form-divider"></div>
+          </div>
+
+          <!-- Right Side - Featured Image -->
+          <div class="col-12 md:col-4">
+            <div class="featured-image-section">
+              <h4 class="mb-3">Imagem em Destaque</h4>
+              
+              <!-- Image Upload Area -->
+              <div class="image-upload-container">
+                <div 
+                  v-if="!featuredImage" 
+                  class="upload-placeholder"
+                  @click="triggerFileInput"
+                  @dragover.prevent
+                  @drop.prevent="handleDrop"
+                >
+                  <i class="pi pi-cloud-upload text-4xl text-gray-400 mb-3"></i>
+                  <p class="text-gray-600 mb-2">Clique para fazer upload ou arraste uma imagem</p>
+                  <small class="text-gray-500">PNG, JPG até 10MB</small>
                 </div>
                 
-                <v-button class="" large :loading="form.busy">save</v-button>
-            </form>
-
-        </card>
-    </div>
+                <div v-else class="image-preview-container">
+                  <img :src="featuredImagePreview" alt="Preview" class="featured-image-preview" />
+                  <div class="image-overlay">
+                    <Button 
+                      icon="pi pi-pencil" 
+                      class="p-button-rounded p-button-secondary p-button-sm mr-2"
+                      @click="triggerFileInput"
+                    />
+                    <Button 
+                      icon="pi pi-trash" 
+                      class="p-button-rounded p-button-danger p-button-sm"
+                      @click="removeFeaturedImage"
+                    />
+                  </div>
+                </div>
+                
+                <input 
+                  ref="fileInput"
+                  type="file" 
+                  accept="image/*" 
+                  @change="handleFileSelect"
+                  style="display: none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </form>
+  </div>
 </template>
 
-
-<style scoped>
-
-    .gallery-zone {
-        padding: 1rem;
-        border: 1px dashed #ffd988;
-        border-radius: 0.25rem;
-        text-align: center;
-        cursor: pointer;
-        margin-bottom: 1rem;
-    }
-
-    .recipe-gallery {
-        display: flex;
-        gap: 1rem;
-    }
-
-    
-    .recipe-gallery-item > img {
-        position: relative;
-        border-radius: 10px;
-        height: 100px;
-
-    }
-    .colored-bg {
-        z-index: -10;
-        background: #ffd988;
-        padding: 6rem;
-        position: absolute;
-        width: 100%;
-        left: 0;
-        top: 61px;
-    }
-
-    .file-input-button {
-        border: 1px dashed #ffd988;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-        border-radius: 0.25rem;
-        height: 150px;
-        width: 100%;
-        position: relative;
-    }
-
-    .input-empty {
-        background: url('/img/blank-image.svg') no-repeat center center;
-        background-size: cover;
-        width: 150px;
-        height: 100px;
-    }
-
-    .image-preview {
-        width: 100%;
-        height: 100px;
-        background-size: cover;
-        background-position: center;
-    }
-
-    .clear-thumbnail {
-        position: absolute;
-        top: -5px;
-        right: 0;
-        z-index: 5;
-    }
-</style>
-
 <script setup>
-
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import Form from 'vform'
-import { useRecipesStore } from '../../store/modules/recipes'
-import { ref, reactive } from 'vue'
+import { reactive, ref, watch, computed } from 'vue';
+import { useAxios } from '@vueuse/integrations/useAxios';
+import { useToast } from 'primevue/usetoast';
+import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
+import TreeSelect from 'primevue/treeselect';
+import MultiSelect from 'primevue/multiselect';
+import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import FormSkeleton from '../../components/skeletons/FormSkeleton.vue';
 import axios from '../../plugins/axios';
-import { PlusIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
-import { useDropzone } from "vue3-dropzone";
-import { get } from '@vueuse/core';
 
-const route = useRoute();
-const router = useRouter();
-const store = useRecipesStore();
+const toast = useToast();
 
-const form = reactive( new Form({
-  title: '',
+const formData = reactive({
+  name: '',
+  sku: '',
+  price: null,
+  category: null,
+  tags: [],
   description: '',
-  thumbnail: null,
-  servings: '',
-  prep_time: '',
-  prep_time_type: '1',
-  gallery: [],
-  delete_from_gallery: [],
-  ingredients: [
-    {
-        placeholder: 'e.g. 1 spoon of sugar',
-        name: '',
-    }, 
-    {
-        name: '',
-        placeholder: 'e.g. 1 cup of rice',
-    }, 
-    {
-        name: '',
-        placeholder: 'e.g. 2 spoons of cream',
-    }
-  ],
-  steps: [
-        {
-            description: '',
-            placeholder: 'e.g. Turn on the Airless Air Fryer',
-        },
-    ],
-
-}));
-const thumbnail = ref(null);
-const thumbnailPreview = ref(null);
-
-const id = route.params.id;
-
-
-const saveRecipe = async () => {
-
-    form.gallery = form.gallery.filter((image) => {
-        return image.id == undefined
-    });
-
-    console.log(form.gallery);
-    
-    
-    if (id) {
-        form['_method'] = "PUT";
-        const { data } = await form.post('/recipes/' + id, form)
-    } else {
-        await form.post('/recipes')
-    }
-
-    // router.push({ path: '/dashboard' });
-};
-
-onMounted(() => {
-    if (id) {
-        form.get(`/recipes/${id}`).then((response) => {
-            Object.assign(form, response.data);
-        });
-    }
+  inStock: false
 });
 
-const addStep = () => {
-    form.steps.push({});
-}
+const errors = reactive({
+  name: '',
+  sku: '',
+  price: '',
+  category: ''
+});
 
-const removeStep = (index) => {
-    form.steps.splice(index, 1);
-}
+// Featured Image Upload
+const featuredImage = ref(null);
+const featuredImagePreview = ref('');
+const fileInput = ref(null);
 
-const addIngredient = () => {
-    form.ingredients.push({});
-}   
-
-const removeIngredient = (index) => {
-    form.ingredients.splice(index, 1);
-}
-
-const handleFile = (event) => {
-    // We'll grab just the first file...
-    // You can also do some client side validation here.
-    const file = event.target.files[0]
-
-    if(!file) {
-        return;
-    }
-
-    if(!file.type.startsWith("image/")) {
-        alert('Uplaod an image');
-    }
-
-    
-    if (file.size > 31800000) { // 30MB
-        alert('File too big (> 30MB)');
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        thumbnailPreview.value = e.target.result;
-    };
-
-    reader.readAsDataURL(file);
-    
-    // Set the file object onto the form...
-    form.thumbnail = file
+const triggerFileInput = () => {
+  fileInput.value.click();
 };
 
-const onPickFile = () => {
-    thumbnail.value.click()
-}
-const clearThumbnail = () => {
-    form.thumbnail = null
-    thumbnailPreview.value = null
-}
-
-
-const saveFiles = (files) => {
-    for (var x = 0; x < files.length; x++) {
-        form.gallery.push(files[x]);
-    }
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    handleImageFile(file);
+  }
 };
 
-function onDrop(acceptFiles, rejectReasons) {
-    saveFiles(acceptFiles); // saveFiles as callback
-}
+const handleDrop = (event) => {
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    handleImageFile(file);
+  }
+};
 
-const removeGalleryImage = (index) => {
-    if(form.gallery[index].uuid)
-        form.delete_from_gallery.push(form.gallery[index].uuid);
+const handleImageFile = (file) => {
+  if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Arquivo muito grande. Máximo 10MB.',
+      life: 3000
+    });
+    return;
+  }
 
-    form.gallery.splice(index, 1);
+  featuredImage.value = file;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    featuredImagePreview.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
 
-}
+const removeFeaturedImage = () => {
+  featuredImage.value = null;
+  featuredImagePreview.value = '';
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
+};
 
-const options = reactive({
-  onDrop,
-  accept: '.jpg, .jpeg, .png',
-  maxSize: 31800000
-})
+// Categories API
+const { data: categoriesData, isLoading: isLoadingCategories } = useAxios(
+  '/categorias',
+  { method: 'GET' },
+  axios
+);
 
-const getImage = (image) => {
+const categories = ref([]);
+
+// Transform categories to tree structure for TreeSelect
+const categoriesTree = computed(() => {
+  if (!categories.value.length) return [];
+  
+  return categories.value.map(category => ({
+    key: category.id,
+    label: category.nome,
+    data: category,
+    children: category.subcategorias?.map(sub => ({
+      key: sub.id,
+      label: sub.nome,
+      data: sub
+    })) || []
+  }));
+});
+
+watch(categoriesData, (newVal) => {
+  if (newVal?.data) {
+    categories.value = newVal.data;
+  }
+});
+
+// Tags data
+const availableTags = ref([
+  { id: 1, name: 'Novo' },
+  { id: 2, name: 'Promoção' },
+  { id: 3, name: 'Destaque' },
+  { id: 4, name: 'Limitado' },
+  { id: 5, name: 'Sazonal' },
+  { id: 6, name: 'Premium' },
+  { id: 7, name: 'Eco-friendly' },
+  { id: 8, name: 'Artesanal' }
+]);
+
+const { execute: submitForm, isLoading: isSubmitting } = useAxios(
+  { 
+    method: 'POST',
+    url: '/produtos'
+  },
+  axios
+);
+
+const validateForm = () => {
+  let valid = true;
+  
+  errors.name = formData.name.trim() ? '' : 'Nome do produto é obrigatório';
+  errors.sku = formData.sku.trim() ? '' : 'SKU é obrigatório';
+  errors.price = formData.price !== null ? '' : 'Preço é obrigatório';
+  errors.category = formData.category ? '' : 'Categoria é obrigatória';
+
+  if (!formData.name.trim() || !formData.sku.trim() || formData.price === null || !formData.category) {
+    valid = false;
+  }
+
+  return valid;
+};
+
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  try {
+    const submitData = new FormData();
+    submitData.append('name', formData.name);
+    submitData.append('sku', formData.sku);
+    submitData.append('price', formData.price);
+    submitData.append('category_id', formData.category);
+    submitData.append('description', formData.description);
     
-    return image.original_url ? image.original_url : URL.createObjectURL(image);
-}
+    if (formData.tags.length > 0) {
+      submitData.append('tags', JSON.stringify(formData.tags));
+    }
+    
+    if (featuredImage.value) {
+      submitData.append('featured_image', featuredImage.value);
+    }
 
-const {isDragActive, getRootProps, getInputProps,...rest } = useDropzone(options);
+    await submitForm({
+      data: submitData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
 
+    toast.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Produto cadastrado com sucesso!',
+      life: 3000
+    });
 
+    // Reset form
+    Object.assign(formData, {
+      name: '',
+      sku: '',
+      price: null,
+      category: null,
+      tags: [],
+      description: '',
+      inStock: false
+    });
+    removeFeaturedImage();
+
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.response?.data?.message || 'Falha ao cadastrar produto',
+      life: 5000
+    });
+  }
+};
 </script>
+
+<style scoped>
+.product-form-container {
+  margin: 0 auto;
+  padding: 2rem;
+  max-width: 1380px;
+}
+
+.form-divider {
+  width: 2px;
+  height: 100%;
+  background-color: #f3f3f3;
+  margin: 0 auto;
+  position: absolute;
+  top: 0;
+}
+
+.featured-image-section {
+  padding: 1rem;
+}
+
+.image-upload-container {
+  position: relative;
+}
+
+.upload-placeholder {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f9fafb;
+}
+
+.upload-placeholder:hover {
+  border-color: #6366f1;
+  background: #f0f9ff;
+}
+
+.image-preview-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.featured-image-preview {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-preview-container:hover .image-overlay {
+  opacity: 1;
+}
+
+.form-card {
+  height: fit-content;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.form-card .p-card-content {
+}
+
+@media (max-width: 768px) {
+  .form-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 2rem 0;
+  }
+  
+  .product-form-container {
+    padding: 1rem;
+  }
+}
+</style>

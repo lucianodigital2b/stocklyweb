@@ -6,30 +6,24 @@ function page (path) {
 export default [
   { path: '/', component: page('dashboard'), name: '/', meta: { layout: 'AppLayout' } },  
   { path: '/dashboard', component: page('dashboard'), name: 'dashboard', meta: { layout: 'AppLayout' } },  
-  { path: '/login', component: page('auth/Login'), name: 'login', meta: { layout: 'Basic' } },  
-  { path: '/register', component: page('auth/Register'), name: 'register', meta: { layout: 'Basic' } },
+  { path: '/login', component: () => import('../pages/auth/Login.vue'), name: 'login', meta: { layout: 'Basic' } },  
+  { path: '/register', component: () => import('../pages/auth/Register.vue'), name: 'register', meta: { layout: 'Basic' } },
 
-  { path: '/password/reset', name: 'password.request', component: page('auth/password/email') },
-  { path: '/password/reset/:token', name: 'password.reset', component: page('auth/password/reset') },
-  { path: '/email/verify/:id', name: 'verification.verify', component: page('auth/verification/verify') },
-  { path: '/email/resend', name: 'verification.resend', component: page('auth/verification/resend') },
+  { path: '/password/reset', name: 'password.request', component: () => import('../pages/auth/password/email.vue'), meta: { layout: 'Basic' } },
+  { path: '/password/reset/:token', name: 'password.reset', component: () => import('../pages/auth/password/reset.vue'), meta: { layout: 'Basic' } },
+  { path: '/email/verify/:id', name: 'verification.verify', component: () => import('../pages/auth/verification/verify.vue'), meta: { layout: 'Basic' } },
+  { path: '/email/resend', name: 'verification.resend', component: () => import('../pages/auth/verification/resend.vue'), meta: { layout: 'Basic' } },
 
   {
     path: '/products',
     name: 'products.index',
     component: () => import('../pages/products/ProductList.vue'),
-    children: [
-      {
-        path: '/products/create',
-        name: 'products.create',
-        component: () => import('../pages/products/ProductList.vue'),
-        meta: { 
-          showDrawer: true, 
-          drawerType: 'Product', // Identifier for content
-          parentRoute: '/products',      // Route to return to on close
-        } 
-      },
-    ],
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/products/create',
+    name: 'products.create',
+    component: () => import('../pages/products/ProductForm.vue'),
     meta: { layout: 'AppLayout' }
   },
 

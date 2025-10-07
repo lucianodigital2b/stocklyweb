@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -15,6 +16,65 @@ class ProductController extends Controller
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $args = [
+            'parent_id' => null, 
+            'with_children' => true,
+            'limit' => $request->input('per_page', 10)
+        ];
+        
+        if(!empty($request->input('q'))){
+            $args['q'] = $request->input('q');
+        }
+
+        $args['category_id'] = $request->input('category', false);
+
+        $products = $this->productService->list($args);
+        
+        // Transform products for API response
+        $transformedProducts = $products->map(function($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price ?? 0,
+                'category' => $product->categories->first()->name ?? 'Uncategorized',
+                'rating' => rand(3, 5), // Mock rating for now
+                'inventoryStatus' => $this->getInventoryStatus($product),
+                'image' => 'bamboo-watch.jpg' // Mock image for now
+            ];
+        });
+        
+
+        dd($transformedProducts);
+        return response()->json([
+            'data' => $transformedProducts,
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+            'per_page' => $products->perPage(),
+            'total' => $products->total(),
+            'from' => $products->firstItem(),
+            'to' => $products->lastItem()
+        ]);
+    }
+    
+    /**
+     * Get inventory status based on product data
+     */
+    private function getInventoryStatus($product)
+    {
+        // Mock inventory status logic - you can implement actual logic based on your inventory system
+        $statuses = ['INSTOCK', 'LOWSTOCK', 'OUTOFSTOCK'];
+        return $statuses[array_rand($statuses)];
     }
 
     /**

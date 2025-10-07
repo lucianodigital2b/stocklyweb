@@ -18,7 +18,7 @@ Route::get('/user', function (Request $request) {
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('customers', CustomerController::class);
-    Route::apiResource('products', ProductController::class)->except(['index']);
+    Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('categories', CategoryController::class);
 
@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Billing portal route
     Route::get('stores/{store}/billing-portal', [StoreController::class, 'getCustomerPortalUrl']);
 });
+
 
 // Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
