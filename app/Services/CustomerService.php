@@ -9,6 +9,40 @@ use Illuminate\Support\Facades\DB;
 class CustomerService
 {
     /**
+     * Get a paginated list of customers with optional search and filtering.
+     *
+     * @param array $args
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function list(array $args = [])
+    {
+        $query = Customer::with(['store', 'orders']);
+
+        // Apply search filter
+        if (!empty($args['q'])) {
+            $searchTerm = $args['q'];
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('phone', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('document_number', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Apply store filter if provided
+        if (!empty($args['store_id'])) {
+            $query->where('store_id', $args['store_id']);
+        }
+
+        // Order by most recent first
+        $query->orderBy('id', 'desc');
+
+        // Apply pagination
+        $limit = $args['limit'] ?? 10;
+        return $query->paginate($limit);
+    }
+
+    /**
      * Create a new customer with optional meta data.
      *
      * @param array $customerData

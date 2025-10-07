@@ -18,11 +18,11 @@ const model = ref([
                 items: [
                     {
                         label: 'Cadastrar',
-                        to: '/customers'
+                        to: '/customers/create'
                     },
                     {
                         label: 'Listar',
-                        to: '/customers/create'
+                        to: '/customers'
                     },
                 ]
             },

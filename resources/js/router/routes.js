@@ -34,6 +34,25 @@ export default [
   },
 
   {
+    path: '/customers',
+    name: 'customers.index',
+    component: () => import('../pages/customers/CustomerList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/customers/create',
+    name: 'customers.create',
+    component: () => import('../pages/customers/CustomerForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/customers/:id/edit',
+    name: 'customers.edit',
+    component: () => import('../pages/customers/CustomerForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
     path: '/settings',
     component: page('settings/index'),
     children: [

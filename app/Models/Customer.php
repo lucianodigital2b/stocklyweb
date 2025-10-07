@@ -10,7 +10,23 @@ class Customer extends Model
     /** @use HasFactory<\Database\Factories\CustomerFactory> */
     use HasFactory;
 
-    protected $fillable = ['store_id', 'name', 'email', 'phone'];
+    protected $fillable = [
+        'store_id', 
+        'name', 
+        'email', 
+        'phone',
+        'document_number',
+        'cep',
+        'address',
+        'number',
+        'neighborhood',
+        'city',
+        'state',
+        'birth_date',
+        'customer_type',
+        'newsletter_subscription',
+        'status'
+    ];
 
     public function store()
     {

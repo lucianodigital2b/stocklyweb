@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
@@ -15,6 +16,32 @@ class CustomerController extends Controller
     public function __construct(CustomerService $customerService)
     {
         $this->customerService = $customerService;
+    }
+
+    /**
+     * Display a listing of customers.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $args = [
+            'limit' => $request->input('per_page', 10)
+        ];
+        
+        if (!empty($request->input('q'))) {
+            $args['q'] = $request->input('q');
+        }
+
+        if (!empty($request->input('store_id'))) {
+            $args['store_id'] = $request->input('store_id');
+        }
+
+        $customers = $this->customerService->list($args);
+        
+        // Return raw paginated customers without transformation
+        return response()->json($customers);
     }
 
     /**
