@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('document_number')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->string('website')->nullable();
             $table->text('address')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();

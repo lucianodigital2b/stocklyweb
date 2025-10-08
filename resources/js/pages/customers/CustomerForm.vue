@@ -97,11 +97,13 @@
                         v-model="formData.cep" 
                         placeholder="00000-000"
                         class="w-full"
-                        :class="{ 'p-invalid': errors.cep }"
-                        @blur="fetchAddressByCep"
+                        :class="{ 'p-invalid': errors.cep || viaCepErrors.cep }"
+                        @blur="handleCepBlur"
+                        @input="handleCepInput"
                         maxlength="9"
                       />
                       <small v-if="errors.cep" class="p-error">{{ errors.cep }}</small>
+                      <small v-else-if="viaCepErrors.cep" class="p-error">{{ viaCepErrors.cep }}</small>
                       <small v-else class="text-color-secondary">Digite o CEP para preenchimento automático</small>
                     </div>
 
@@ -339,6 +341,7 @@ import { reactive, ref, watch, computed, onMounted } from 'vue';
 import { useAxios } from '@vueuse/integrations/useAxios';
 import { useToast } from 'primevue/usetoast';
 import { useRoute, useRouter } from 'vue-router';
+import { useViaCep } from '../../composables/useViaCep';
 import InputText from 'primevue/inputtext';
 import Checkbox from 'primevue/checkbox';
 import Dropdown from 'primevue/dropdown';
@@ -355,6 +358,13 @@ import axios from '../../plugins/axios';
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
+
+// ViaCEP integration
+const { 
+  formatCep, 
+  fetchAddressByCep, 
+  errors: viaCepErrors 
+} = useViaCep();
 
 // Check if we're in edit mode
 const isEditMode = computed(() => !!route.params.id);
@@ -410,70 +420,16 @@ const customerTypeOptions = ref([
 ]);
 
 // ViaCEP API integration
-const isLoadingCep = ref(false);
+// ViaCEP handlers
+const handleCepInput = (event) => {
+  formData.cep = formatCep(event.target.value)
+}
 
-const formatCep = (cep) => {
-  // Remove all non-numeric characters
-  const numericCep = cep.replace(/\D/g, '');
-  
-  // Apply CEP mask (00000-000)
-  if (numericCep.length <= 5) {
-    return numericCep;
-  } else {
-    return numericCep.slice(0, 5) + '-' + numericCep.slice(5, 8);
+const handleCepBlur = async () => {
+  if (formData.cep && formData.cep.replace(/\D/g, '').length === 8) {
+    await fetchAddressByCep(formData.cep, formData)
   }
-};
-
-const fetchAddressByCep = async () => {
-  const cep = formData.cep.replace(/\D/g, ''); // Remove mask
-  
-  if (cep.length !== 8) {
-    return;
-  }
-
-  isLoadingCep.value = true;
-  errors.cep = '';
-
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
-
-    if (data.erro) {
-      errors.cep = 'CEP não encontrado';
-      return;
-    }
-
-    // Auto-fill address fields
-    formData.address = data.logradouro || '';
-    formData.neighborhood = data.bairro || '';
-    formData.city = data.localidade || '';
-    formData.state = data.uf || '';
-
-    // Clear related errors
-    errors.address = '';
-    errors.neighborhood = '';
-    errors.city = '';
-    errors.state = '';
-
-    toast.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Endereço preenchido automaticamente!',
-      life: 2000
-    });
-
-  } catch (error) {
-    console.error('Error fetching CEP:', error);
-    errors.cep = 'Erro ao buscar CEP. Verifique sua conexão.';
-  } finally {
-    isLoadingCep.value = false;
-  }
-};
-
-// Watch CEP input to apply mask
-watch(() => formData.cep, (newCep) => {
-  formData.cep = formatCep(newCep);
-});
+}
 
 const triggerFileInput = () => {
   fileInput.value.click();

@@ -16,7 +16,6 @@ class Company extends Model
         'document_number',
         'email',
         'phone',
-        'website',
         'address',
         'city',
         'state',

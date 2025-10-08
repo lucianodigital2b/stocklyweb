@@ -1,128 +1,251 @@
 <template>
-  <section class="wrapper-form" >
-    <div class="container py-5 h-100">
-      <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col-xl-10">
-          <div class="card rounded-5 text-black">
-            <div class="row g-0">
-              <div class="col-lg-6">
-                <div class="card-body p-md-5 mx-md-4">
-
-                  <div class="d-flex align-items-center justify-content-baseline mb-7 gap-2">
-                    <img :src="'../img/logo.png'" alt="logo" class="logo">
-                    <h4 class="mb-0 font-weight-bold logo">recipefy</h4>
-                  </div>
-
-                  <form @submit.prevent="register" @keydown="form.onKeydown($event)">
-                    <p>Please fill all the required fields</p>
-
-                    <AlertError :form="form" />
-                    <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example11">Name</label>
-                      <input solid v-model="form.name" :class="{ 'is-invalid': form.errors.has('name') }" class="form-control" name="name">
-                      <has-error :form="form" field="name" />
-                    </div>
-
-                    <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example11">E-mail</label>
-                      <input solid v-model="form.email" :class="{ 'is-invalid': form.errors.has('email') }" class="form-control" type="email" name="email">
-                      <has-error :form="form" field="email" />
-                    </div>
-
-                    <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example22">Password</label>
-                      <input autocomplete  v-model="form.password" :class="{ 'is-invalid': form.errors.has('password') }" class="form-control" type="password" name="password">
-                      <has-error :form="form" field="password" />
-
-                    </div>
-                    <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example22">Confirm Password</label>
-                      <input autocomplete  v-model="form.password_confirmation" :class="{ 'is-invalid': form.errors.has('password_confirmation') }" class="form-control" type="password" name="password_confirmation">
-                      <has-error :form="form" field="password_confirmation" />
-                    </div>
-
-                    <div class="text-center pt-1 mb-5 pb-1">
-                      <v-button large block :loading="form.busy">Register</v-button>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-center pb-4">
-                      <p class="mb-0 me-2">Already have an account?</p>
-                      <router-link
-                        :to="{ path: '/login' }"
-                        class="font-medium "
-                      >
-                        Login now
-                      </router-link>
-                    </div>
-
-                  </form>
-
-                </div>
-              </div>
-              <div class="col-lg-6 d-flex align-items-center bg-img">
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="register-container min-h-screen flex">
+    <div class="left-section flex-1 flex flex-column align-items-center justify-content-center p-4">
+      <div class="illustration-container mb-4">
+        <svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="50" y="40" width="200" height="120" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+          <circle cx="120" cy="70" r="15" fill="#10b981"/>
+          <circle cx="180" cy="70" r="15" fill="#3b82f6"/>
+          <rect x="80" y="100" width="140" height="8" rx="4" fill="#3b82f6"/>
+          <rect x="100" y="115" width="100" height="6" rx="3" fill="#94a3b8"/>
+          <rect x="110" y="130" width="80" height="6" rx="3" fill="#94a3b8"/>
+          <circle cx="80" cy="60" r="3" fill="#10b981"/>
+          <circle cx="90" cy="60" r="3" fill="#f59e0b"/>
+          <circle cx="100" cy="60" r="3" fill="#ef4444"/>
+        </svg>
+      </div>
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Comece sua jornada</h2>
+        <p class="text-gray-600 max-w-md">
+          Junte-se ao Stockly e transforme a gestão do seu estoque. 
+          Crie sua conta e descubra como nossa plataforma pode otimizar seus processos de negócio.
+        </p>
       </div>
     </div>
-  </section>
+    
+    <div class="right-section flex-1 flex align-items-center justify-content-center">
+      <div class="register-form-container w-full max-w-md">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-gray-800 mb-2">Criar Conta</h1>
+          <p class="text-gray-600">Preencha os dados para começar</p>
+        </div>
+        
+        <form @submit.prevent="register" class="space-y-4">
+          <div class="field">
+            <InputText 
+              v-model="form.name" 
+              placeholder="Nome completo" 
+              class="w-full"
+              :class="{ 'p-invalid': form.errors.has('name') }"
+              required
+            />
+            <has-error :form="form" field="name" />
+          </div>
+          
+          <div class="field">
+            <InputText 
+              v-model="form.email" 
+              type="email" 
+              placeholder="seu@email.com" 
+              class="w-full"
+              :class="{ 'p-invalid': form.errors.has('email') }"
+              required
+            />
+            <has-error :form="form" field="email" />
+          </div>
+          
+          <div class="field">
+            <Password 
+              v-model="form.password" 
+              placeholder="Senha" 
+              :feedback="true"
+              toggleMask
+              class="w-full"
+              :class="{ 'p-invalid': form.errors.has('password') }"
+              required
+            />
+            <has-error :form="form" field="password" />
+          </div>
+          
+          <div class="field">
+            <Password 
+              v-model="form.password_confirmation" 
+              placeholder="Confirmar senha" 
+              :feedback="false"
+              toggleMask
+              class="w-full"
+              :class="{ 'p-invalid': form.errors.has('password_confirmation') }"
+              required
+            />
+            <has-error :form="form" field="password_confirmation" />
+          </div>
+
+          <div v-if="form.errors.any() || errorMessage" class="error-container mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <div class="text-sm">
+              <!-- Single error message -->
+              <div v-if="errorMessage" class="mb-1 text-error">
+                {{ errorMessage }}
+              </div>
+              <!-- Form validation errors -->
+              <AlertError :form="form" />
+            </div>
+          </div>
+
+          <Button 
+            type="submit" 
+            label="Criar Conta" 
+            class="w-full p-button-primary"
+            :loading="form.busy"
+          />
+          
+          <div class="text-center mt-4">
+            <span class="text-sm text-gray-600">Já tem uma conta? </span>
+            <router-link to="/login" class="text-sm text-blue-600 hover:text-blue-800">
+              Entrar
+            </router-link>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </template>
 
 
 <style scoped>
-  .bg-img {
-    background: url('../img/register-img.jpg') no-repeat center center;
-    background-size: cover;
-  }
+.register-container {
+  font-family: 'Inter', sans-serif;
+}
 
-  .wrapper-form {
-    height: 100vh;
-  }
+.left-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
 
-  @media (min-width: 769px) {
-    .bg-img {
-      border-top-right-radius:2rem;
-      border-bottom-right-radius:2rem;
-    }
+.illustration-container svg {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.right-section {
+  background: #ffffff;
+}
+
+.register-form-container {
+  padding: 2rem;
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field :deep(.p-inputtext) {
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.875rem;
+}
+
+.field :deep(.p-inputtext:focus) {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.field :deep(.p-password) {
+  width: 100%;
+}
+
+.field :deep(.p-password .p-inputtext) {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.875rem;
+}
+
+:deep(.p-button) {
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.error-container {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.error-container .text-error {
+  color: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    flex-direction: column;
   }
+  
+  .left-section {
+    min-height: 40vh;
+  }
+  
+  .right-section {
+    min-height: 60vh;
+  }
+}
 </style>
 
 <script setup>
-
-
+import { reactive, ref } from 'vue'
 import Form from 'vform'
-import Cookies from 'js-cookie'
-import LoginWithGithub from '../../components/LoginWithGithub.vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../store/modules/auth'
-import { ref, reactive } from 'vue'
-import axios from '../../plugins/axios';
+import { AlertError, HasError } from 'vform/components/bootstrap5'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
 
-const form = reactive( new Form({
+const router = useRouter()
+const store = useAuthStore()
+
+// Error message for single error responses
+const errorMessage = ref('')
+
+// Form
+const form = reactive(new Form({
   name: '',
   email: '',
   password: '',
   password_confirmation: ''
-}));
+}))
 
-const router = useRouter()
-
+// Register
 const register = async () => {
-    const { data } = await form.post('/register')
-    const store = useAuthStore()
+  try {
+    // Clear previous error message
+    errorMessage.value = ''
     
-    const login_data = await form.post('/login')
+    // Submit the registration form
+    const { data } = await form.post('/api/register')
+    
+    // Auto-login after registration
+    const loginForm = new Form({
+      email: form.email,
+      password: form.password
+    })
+    
+    const loginData = await loginForm.post('/api/login')
 
-
-    // Log in the user.
+    // Save the token and user
     store.login({
-      token: login_data.data.token,
-      user: login_data.data.user,
+      token: loginData.data.token,
+      user: loginData.data.user,
     })
 
-    // Redirect home.
-    router.push({ name: 'dashboard' })
-}
+    // Redirect to onboarding instead of dashboard
+    router.push({ name: 'onboarding' })
+  } catch (error) {
+    console.log('Registration error:', error)
 
+    if (error.response && error.response.data && error.response.data.error) {
+      errorMessage.value = error.response.data.error
+    }
+  }
+}
 </script>

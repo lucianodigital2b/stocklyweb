@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasOne(StoreUser::class);
     }
 
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super-admin') || $this->company_id === null;

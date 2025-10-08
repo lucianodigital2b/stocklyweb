@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CompanyController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products', ProductController::class);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('companies', CompanyController::class);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 

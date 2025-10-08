@@ -8,6 +8,7 @@ export default [
   { path: '/dashboard', component: page('dashboard'), name: 'dashboard', meta: { layout: 'AppLayout' } },  
   { path: '/login', component: () => import('../pages/auth/Login.vue'), name: 'login', meta: { layout: 'Basic' } },  
   { path: '/register', component: () => import('../pages/auth/Register.vue'), name: 'register', meta: { layout: 'Basic' } },
+  { path: '/onboarding', component: () => import('../pages/auth/Onboarding.vue'), name: 'onboarding', meta: { layout: 'Basic' } },
 
   { path: '/password/reset', name: 'password.request', component: () => import('../pages/auth/password/email.vue'), meta: { layout: 'Basic' } },
   { path: '/password/reset/:token', name: 'password.reset', component: () => import('../pages/auth/password/reset.vue'), meta: { layout: 'Basic' } },
