@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\MultiTenant;
 
 class Customer extends Model
 {
     /** @use HasFactory<\Database\Factories\CustomerFactory> */
-    use HasFactory;
+    use HasFactory, MultiTenant;
 
     protected $fillable = [
         'store_id', 
@@ -25,7 +26,8 @@ class Customer extends Model
         'birth_date',
         'customer_type',
         'newsletter_subscription',
-        'status'
+        'status',
+        'company_id'
     ];
 
     public function store()

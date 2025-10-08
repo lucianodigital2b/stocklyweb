@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\MultiTenant;
 
 class Warehouse extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, MultiTenant;
 
     protected $fillable = [
         'name',
-        'status'
+        'status',
+        'company_id'
     ];
 
     public function docks()

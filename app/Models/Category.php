@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\MultiTenant;
 
 class Category extends Model
 {
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
-    use HasFactory;
+    use HasFactory, MultiTenant;
 
-    protected $fillable = ['store_id', 'name'];
+    protected $fillable = ['store_id', 'name', 'company_id'];
 
     public function store()
     {

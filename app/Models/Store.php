@@ -7,14 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Laravel\Cashier\Billable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Traits\MultiTenant;
 
 class Store extends Model implements HasMedia
 {
     
-    use HasFactory, Billable, InteractsWithMedia;
+    use HasFactory, Billable, InteractsWithMedia, MultiTenant;
 
 
-    protected $fillable = ['name', 'domain'];
+    protected $fillable = ['name', 'domain', 'company_id'];
 
     public function storeUsers()
     {

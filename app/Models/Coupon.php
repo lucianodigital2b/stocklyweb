@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\MultiTenant;
 
 class Coupon extends Model
 {
     /** @use HasFactory<\Database\Factories\CouponFactory> */
-    use HasFactory;
+    use HasFactory, MultiTenant;
 
-    protected $fillable = ['store_id', 'code', 'name', 'description', 'uses', 'max_uses', 'max_uses_user', 'discount_type', 'discount_amount', 'free_shipping', 'starts_at', 'expires_at'];
+    protected $fillable = ['store_id', 'code', 'name', 'description', 'uses', 'max_uses', 'max_uses_user', 'discount_type', 'discount_amount', 'free_shipping', 'starts_at', 'expires_at', 'company_id'];
 
     public function store()
     {

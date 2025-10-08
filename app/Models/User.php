@@ -8,11 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Traits\MultiTenant;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, MultiTenant;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'company_id',
     ];
 
     /**
@@ -50,5 +52,10 @@ class User extends Authenticatable
     public function storeUser(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(StoreUser::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super-admin') || $this->company_id === null;
     }
 }

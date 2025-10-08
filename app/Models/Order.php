@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\MultiTenant;
 
 class Order extends Model
 {
     /** @use HasFactory<\Database\Factories\OrderFactory> */
-    use HasFactory;
+    use HasFactory, MultiTenant;
 
-    protected $fillable = ['store_id', 'customer_id', 'coupon_id', 'status', 'total_price'];
+    protected $fillable = ['store_id', 'customer_id', 'coupon_id', 'status', 'total_price', 'company_id'];
 
     public function store()
     {

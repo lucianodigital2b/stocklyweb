@@ -1,6 +1,7 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
+import ProfileDropdown from '@/components/ProfileDropdown.vue';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 </script>
@@ -34,11 +35,7 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
             </div> -->
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                    <ProfileDropdown />
                 </div>
             </div>
         </div>
