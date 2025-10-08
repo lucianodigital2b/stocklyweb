@@ -9,6 +9,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\EntryController;
+use App\Http\Controllers\SupplierController;
+use App\Models\CostCenter;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -23,6 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('suppliers', SupplierController::class);
+    Route::apiResource('cost-centers', CostCenterController::class);
+    Route::apiResource('entries', EntryController::class);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 

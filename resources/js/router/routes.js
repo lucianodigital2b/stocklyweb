@@ -54,6 +54,30 @@ export default [
   },
 
   {
+    path: '/suppliers',
+    name: 'suppliers.index',
+    component: () => import('../pages/suppliers/SupplierList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/suppliers/create',
+    name: 'suppliers.create',
+    component: () => import('../pages/suppliers/SupplierForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/suppliers/:id/edit',
+    name: 'suppliers.edit',
+    component: () => import('../pages/suppliers/SupplierForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
+    path: '/cost-centers',
+    component: page('cost-centers/index'),
+  },
+
+  {
     path: '/settings',
     component: page('settings/index'),
     children: [

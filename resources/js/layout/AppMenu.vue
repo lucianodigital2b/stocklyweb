@@ -27,6 +27,20 @@ const model = ref([
                 ]
             },
             {
+                label: 'Fornecedores',
+                icon: 'pi pi-fw pi-users',
+                items: [
+                    {
+                        label: 'Cadastrar',
+                        to: '/suppliers/create'
+                    },
+                    {
+                        label: 'Listar',
+                        to: '/suppliers'
+                    },
+                ]
+            },
+            {
                 label: 'Produtos',
                 icon: 'pi pi-fw pi-users',
                 items: [
