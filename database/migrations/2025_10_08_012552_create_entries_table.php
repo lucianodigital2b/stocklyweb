@@ -26,7 +26,8 @@ return new class extends Migration
             $table->string('external_code')->nullable();
             $table->longText('payment_info')->nullable();
             $table->string('account')->nullable();
-            $table->string('bank_slip_url')->nullable()->after('charged_at');
+            $table->string('barcode')->nullable();
+            $table->string('bank_slip_url')->nullable();
             $table->timestamps();
         });
     }

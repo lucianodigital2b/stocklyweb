@@ -41,6 +41,25 @@ const model = ref([
                 ]
             },
             {
+                label: 'Lançamentos',
+                icon: 'pi pi-fw pi-money-bill',
+                items: [
+                    {
+                        label: 'Cadastrar',
+                        to: '/entries/create'
+                    },
+                    {
+                        label: 'Listar',
+                        to: '/entries'
+                    },
+                ]
+            },
+            {
+                label: 'Centros de Custo',
+                icon: 'pi pi-fw pi-users',
+                to: '/cost-centers'
+            },
+            {
                 label: 'Produtos',
                 icon: 'pi pi-fw pi-users',
                 items: [

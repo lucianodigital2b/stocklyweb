@@ -13,7 +13,6 @@ class Entry extends Model
     protected $fillable = [
         'value', 
         'company_id', 
-        'service_id', 
         'cost_center_id', 
         'supplier_id', 
         'due_at', 

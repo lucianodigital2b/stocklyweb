@@ -74,7 +74,40 @@ export default [
 
   {
     path: '/cost-centers',
-    component: page('cost-centers/index'),
+    name: 'cost-centers.index',
+    component: () => import('../pages/cost-centers/CostCenterList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/cost-centers/create',
+    name: 'cost-centers.create',
+    component: () => import('../pages/cost-centers/CostCenterForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/cost-centers/:id/edit',
+    name: 'cost-centers.edit',
+    component: () => import('../pages/cost-centers/CostCenterForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
+    path: '/entries',
+    name: 'entries.index',
+    component: () => import('../pages/entries/EntryList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/entries/create',
+    name: 'entries.create',
+    component: () => import('../pages/entries/EntryForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/entries/:id/edit',
+    name: 'entries.edit',
+    component: () => import('../pages/entries/EntryForm.vue'),
+    meta: { layout: 'AppLayout' }
   },
 
   {
