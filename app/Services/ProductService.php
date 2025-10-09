@@ -78,6 +78,11 @@ class ProductService
         DB::beginTransaction();
         
         try {
+            // Remove media data from product data to avoid database errors
+            $gallery = $productData['gallery'] ?? [];
+            $existingGallery = $productData['existing_gallery'] ?? [];
+            unset($productData['gallery'], $productData['existing_gallery']);
+
             // Create the product
             $product = Product::create($productData);
 
@@ -87,20 +92,27 @@ class ProductService
                     $this->addVariant($product->id, $variantData);
                 }
             }
-            if (isset($productData['thumbnail'])) {
-                $product->addMedia($productData['thumbnail'])->toMediaCollection('thumbnail');
-            }
+
+            // Handle gallery uploads - first image becomes thumbnail, rest go to gallery
+            $allImages = array_merge($existingGallery, $gallery);
             
-            if (isset($productData['gallery'])) {
-                foreach ($productData['gallery'] as $image) {
-                    $product->addMedia($image)->toMediaCollection('gallery');
+            if (!empty($allImages)) {
+                foreach ($allImages as $index => $image) {
+                    $collection = ($index === 0) ? 'thumbnail' : 'gallery';
+                    
+                    if (is_string($image)) {
+                        // If it's a file path or URL
+                        $product->addMediaFromUrl($image)->toMediaCollection($collection);
+                    } else {
+                        // If it's an uploaded file
+                        $product->addMedia($image)->toMediaCollection($collection);
+                    }
                 }
             }
 
-
             DB::commit();
 
-            return $product;
+            return $product->fresh(['media']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create product: ' . $e->getMessage());
@@ -123,8 +135,40 @@ class ProductService
         try {
             // Find the product
             $product = Product::findOrFail($productId);
+
+            // Remove media data from product data to avoid database errors
+            $gallery = $productData['gallery'] ?? [];
+            $existingGallery = $productData['existing_gallery'] ?? [];
+            $replaceGallery = $productData['replace_gallery'] ?? true; // Default to replace for new gallery system
+            unset($productData['gallery'], $productData['existing_gallery'], $productData['replace_gallery']);
+
             // Update product data
             $product->update($productData);
+
+            // Handle gallery update - first image becomes thumbnail, rest go to gallery
+            $allImages = array_merge($existingGallery, $gallery);
+            
+            if (!empty($allImages) || $replaceGallery) {
+                if ($replaceGallery) {
+                    // Clear existing media collections
+                    $product->clearMediaCollection('thumbnail');
+                    $product->clearMediaCollection('gallery');
+                }
+
+                if (!empty($allImages)) {
+                    foreach ($allImages as $index => $image) {
+                        $collection = ($index === 0) ? 'thumbnail' : 'gallery';
+                        
+                        if (is_string($image)) {
+                            // If it's a file path or URL
+                            $product->addMediaFromUrl($image)->toMediaCollection($collection);
+                        } else {
+                            // If it's an uploaded file
+                            $product->addMedia($image)->toMediaCollection($collection);
+                        }
+                    }
+                }
+            }
 
             // Update or create variants
             foreach ($variantsData as $variantData) {
@@ -139,7 +183,7 @@ class ProductService
 
             DB::commit();
 
-            return $product;
+            return $product->fresh(['media']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to update product: ' . $e->getMessage());
@@ -161,6 +205,11 @@ class ProductService
             // Find the product
             $product = Product::findOrFail($productId);
 
+            // Clear all media collections before deleting the product
+            $product->clearMediaCollection('thumbnail');
+            $product->clearMediaCollection('gallery');
+
+            // Delete the product (this will also cascade delete related records)
             $product->delete();
 
             DB::commit();

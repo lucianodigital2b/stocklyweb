@@ -56,7 +56,7 @@ const handleLogout = async () => {
 // Handle profile navigation
 const goToProfile = () => {
     closeDropdown();
-    router.push('/profile');
+    router.push({ name: 'profile.settings' });
 };
 
 // Handle settings navigation
@@ -125,14 +125,14 @@ const props = defineProps({
                     class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                 >
                     <i class="pi pi-user mr-3"></i>
-                    My Profile
+                    Meu Perfil
                 </button>
                 <button 
                     @click="goToSettings"
                     class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                 >
                     <i class="pi pi-cog mr-3"></i>
-                    Settings
+                    Configurações
                 </button>
                 <hr class="my-1 border-gray-200 dark:border-gray-600">
                 <button 
@@ -140,7 +140,7 @@ const props = defineProps({
                     class="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
                 >
                     <i class="pi pi-sign-out mr-3"></i>
-                    Logout
+                    Sair
                 </button>
             </div>
         </div>

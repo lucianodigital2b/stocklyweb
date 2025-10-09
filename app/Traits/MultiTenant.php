@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Company;
+use App\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -39,6 +40,11 @@ trait MultiTenant
                 !$model->company_id
             ) {
                 $model->company_id = Auth::user()->company_id;
+                
+                // Only set store_id if the model has this attribute
+                if (in_array('store_id', $model->getFillable()) || $model->hasAttribute('store_id')) {
+                    $model->store_id = Store::where('company_id', Auth::user()->company_id)->first()->id;
+                }
             }
         });
     }

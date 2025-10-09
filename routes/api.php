@@ -12,6 +12,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\EntryController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ProfileController;
 use App\Models\CostCenter;
 
 Route::get('/user', function (Request $request) {
@@ -30,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('cost-centers', CostCenterController::class);
     Route::apiResource('entries', EntryController::class);
+
+    // Additional category routes
+    Route::get('categories/tree', [CategoryController::class, 'tree']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -53,6 +57,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Billing portal route
     Route::get('stores/{store}/billing-portal', [StoreController::class, 'getCustomerPortalUrl']);
+
+    // Profile management routes
+    Route::patch('profile', [ProfileController::class, 'updateProfile']);
+    Route::patch('profile/password', [ProfileController::class, 'updatePassword']);
 });
 
 

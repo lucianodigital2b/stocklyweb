@@ -27,7 +27,7 @@
                     class="w-full"
                     :class="{ 'p-invalid': errors.name }"
                   />
-                  <small v-if="errors.name" class="p-error text-red-600">{{ errors.name }}</small>
+                  <small v-if="errors.name" class="p-error text-red-600">{{ Array.isArray(errors.name) ? errors.name[0] : errors.name }}</small>
                 </div>
 
                 <!-- Description -->
@@ -61,9 +61,62 @@
                     class="w-full"
                     :class="{ 'p-invalid': errors.price }"
                   />
-                  <small v-if="errors.price" class="p-error">{{ errors.price }}</small>
+                  <small v-if="errors.price" class="p-error">{{ Array.isArray(errors.price) ? errors.price[0] : errors.price }}</small>
                 </div>
 
+                <!-- Gallery Section -->
+                <div class="gallery-section mb-4">
+                  <h4 class="mb-3">Galeria</h4>
+                  <p class="text-gray-600 mb-3">A primeira imagem será usada como miniatura do produto.</p>
+                  
+                  <div class="gallery-grid">
+                    <!-- Existing Images -->
+                    <div 
+                      v-for="(image, index) in galleryImages" 
+                      :key="index"
+                      class="gallery-item"
+                      :class="{ 'is-primary': index === 0 }"
+                      @dragstart="handleDragStart(index)"
+                      @dragover.prevent
+                      @drop.prevent="handleGalleryDrop(index, $event)"
+                      draggable="true"
+                    >
+                      <img :src="image.preview" :alt="`Imagem ${index + 1}`" class="gallery-image" />
+                      <div class="gallery-overlay">
+                        <span v-if="index === 0" class="primary-badge">Principal</span>
+                        <div class="gallery-actions">
+                          <Button 
+                            icon="pi pi-trash" 
+                            class="p-button-rounded p-button-danger p-button-sm"
+                            @click="removeGalleryImage(index)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Add New Image Button -->
+                    <div 
+                      class="gallery-item gallery-add-button"
+                      @click="triggerGalleryFileInput"
+                      @dragover.prevent
+                      @drop.prevent="handleGalleryFileDrop"
+                    >
+                      <i class="pi pi-plus text-3xl text-gray-400"></i>
+                      <p class="text-gray-500 text-sm mt-2">Adicionar imagem</p>
+                    </div>
+                  </div>
+                  
+                  <input 
+                    ref="galleryFileInput"
+                    type="file" 
+                    accept="image/*" 
+                    multiple
+                    @change="handleGalleryFileSelect"
+                    style="display: none"
+                  />
+                  
+                  <small class="text-gray-500">PNG, JPG até 10MB cada. Arraste para reordenar.</small>
+                </div>
 
                 <!-- Inventory Section -->
                 <div class="inventory-section mb-4">
@@ -80,7 +133,7 @@
                       class="w-full"
                     />
                     <small class="text-gray-500">Digite o SKU do produto.</small>
-                    <small v-if="errors.sku" class="p-error">{{ errors.sku }}</small>
+                    <small v-if="errors.sku" class="p-error">{{ Array.isArray(errors.sku) ? errors.sku[0] : errors.sku }}</small>
                   </div>
 
                   <!-- Barcode -->
@@ -129,10 +182,6 @@
                     </div>
                   </div>
                 </div>
-
-               
-               
-       
               </template>
             </Card>
           </div>
@@ -142,7 +191,7 @@
             <div class="form-divider"></div>
           </div>
 
-          <!-- Right Side - Product Info & Featured Image -->
+          <!-- Right Side - Product Info -->
           <div class="col-12 md:col-4">
             <!-- Product Status Card -->
             <ToggleCard 
@@ -165,8 +214,6 @@
                     />
                   </div>
                 </div>
-
-              
 
                 <!-- Publicado em -->
                 <div class="status-field mb-3">
@@ -214,76 +261,10 @@
                     class="w-full"
                     :class="{ 'p-invalid': errors.category }"
                   />
-                  <small v-if="errors.category" class="p-error">{{ errors.category }}</small>
+                  <small v-if="errors.category" class="p-error">{{ Array.isArray(errors.category) ? errors.category[0] : errors.category }}</small>
                 </div>
-
-                <!-- Tags -->
-                <!-- <div class="field mb-4">
-                  <Label for="tags">
-                    Tags
-                  </Label>
-                  <MultiSelect 
-                    id="tags" 
-                    v-model="formData.tags" 
-                    :options="availableTags" 
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Selecione tags"
-                    class="w-full"
-                    :maxSelectedLabels="3"
-                    selectedItemsLabel="{0} tags selecionadas"
-                  />
-                  <small class="text-color-secondary">Adicione tags para facilitar a busca</small>
-                </div> -->
-
-
               </div>
-
             </ToggleCard>
-
-
-            <div class="featured-image-section">
-              <h4 class="mb-3">Imagem em Destaque</h4>
-              
-              <!-- Image Upload Area -->
-              <div class="image-upload-container">
-                <div 
-                  v-if="!featuredImage" 
-                  class="upload-placeholder"
-                  @click="triggerFileInput"
-                  @dragover.prevent
-                  @drop.prevent="handleDrop"
-                >
-                  <i class="pi pi-cloud-upload text-4xl text-gray-400 mb-3"></i>
-                  <p class="text-gray-600 mb-2">Clique para fazer upload ou arraste uma imagem</p>
-                  <small class="text-gray-500">PNG, JPG até 10MB</small>
-                </div>
-                
-                <div v-else class="image-preview-container">
-                  <img :src="featuredImagePreview" alt="Preview" class="featured-image-preview" />
-                  <div class="image-overlay">
-                    <Button 
-                      icon="pi pi-pencil" 
-                      class="p-button-rounded p-button-secondary p-button-sm mr-2"
-                      @click="triggerFileInput"
-                    />
-                    <Button 
-                      icon="pi pi-trash" 
-                      class="p-button-rounded p-button-danger p-button-sm"
-                      @click="removeFeaturedImage"
-                    />
-                  </div>
-                </div>
-                
-                <input 
-                  ref="fileInput"
-                  type="file" 
-                  accept="image/*" 
-                  @change="handleFileSelect"
-                  style="display: none"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </template>
@@ -292,336 +273,281 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed, onMounted } from 'vue';
-import { useAxios } from '@vueuse/integrations/useAxios';
-import { useToast } from 'primevue/usetoast';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '../../store/modules/auth';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Checkbox from 'primevue/checkbox';
-import TreeSelect from 'primevue/treeselect';
-import MultiSelect from 'primevue/multiselect';
-import SelectButton from 'primevue/selectbutton';
-import Textarea from 'primevue/textarea';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import FormSkeleton from '../../components/skeletons/FormSkeleton.vue';
-import Label from '../../components/Label.vue';
-import ToggleCard from '../../components/InfoCard.vue';
+import { useToast } from 'primevue/usetoast';
 import axios from '../../plugins/axios';
 
-const toast = useToast();
+// Components
+import Card from 'primevue/card';
+import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
+import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
+import SelectButton from 'primevue/selectbutton';
+import TreeSelect from 'primevue/treeselect';
+import Checkbox from 'primevue/checkbox';
+import Label from '../../components/Label.vue';
+import ToggleCard from '../../components/InfoCard.vue';
+import FormSkeleton from '../../components/skeletons/FormSkeleton.vue';
+
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
-// Check if we're in edit mode
-const isEditMode = computed(() => !!route.params.id);
-const productId = computed(() => route.params.id);
-
+// Reactive data
 const formData = reactive({
   name: '',
-  sku: '',
-  price: null,
-  category: null,
-  stock: 0,
-  tags: [],
   description: '',
-  inStock: false,
-  status: 'draft',
+  price: null,
+  sku: '',
   ean: '',
   stock: 0,
-  allow_backorders: false
+  allow_backorders: false,
+  status: 'draft',
+  category: null,
+  gallery: []
 });
 
-const errors = reactive({
-  name: '',
-  sku: '',
-  price: '',
-  category: ''
-});
-
-// Featured Image Upload
-const featuredImage = ref(null);
-const featuredImagePreview = ref('');
-const fileInput = ref(null);
-
-// Status options based on Shopify product states
-const statusOptions = ref([
-  { label: 'Ativo', value: 'active' },
-  { label: 'Rascunho', value: 'draft' },
-  { label: 'Arquivado', value: 'archived' }
-]);
-
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
-
-const handleFileSelect = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    handleImageFile(file);
-  }
-};
-
-const handleDrop = (event) => {
-  const file = event.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    handleImageFile(file);
-  }
-};
-
-const handleImageFile = (file) => {
-  if (file.size > 10 * 1024 * 1024) { // 10MB limit
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Arquivo muito grande. Máximo 10MB.',
-      life: 3000
-    });
-    return;
-  }
-
-  featuredImage.value = file;
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    featuredImagePreview.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
-};
-
-const removeFeaturedImage = () => {
-  featuredImage.value = null;
-  featuredImagePreview.value = '';
-  if (fileInput.value) {
-    fileInput.value.value = '';
-  }
-};
-
-// Categories API
-const { data: categoriesData, isLoading: isLoadingCategories } = useAxios(
-  '/api/categories',
-  { method: 'GET' },
-  axios
-);
-
-const categories = ref([]);
-
-// Transform categories to tree structure for TreeSelect
-const categoriesTree = computed(() => {
-  if (!categories.value.length) return [];
-  
-  return categories.value.map(category => ({
-    key: category.id,
-    label: category.nome,
-    data: category,
-    children: category.subcategorias?.map(sub => ({
-      key: sub.id,
-      label: sub.nome,
-      data: sub
-    })) || []
-  }));
-});
-
-watch(categoriesData, (newVal) => {
-  if (newVal?.data) {
-    categories.value = newVal.data;
-  }
-});
-
-// Load product data if in edit mode
+const errors = ref({});
+const isSubmitting = ref(false);
+const isLoadingCategories = ref(true);
 const isLoadingProduct = ref(false);
+const categories = ref([]);
+const galleryImages = ref([]);
+const draggedIndex = ref(null);
 
-const loadProductData = async () => {
-  if (isEditMode.value) {
-    isLoadingProduct.value = true;
-    try {
-      const response = await axios.get(`/api/products/${productId.value}`);
-      console.log('Product response:', response); // Debug log
-      
-      if (response.data) {
-        const product = response.data;
-        console.log('Product data:', product); // Debug log
-        
-        // Dynamically map product data to formData fields
-        const fieldMappings = {
-          name: product.name || '',
-          sku: product.sku || '',
-          price: product.price || null,
-          description: product.description || '',
-          status: product.status || 'draft',
-          ean: product.ean || '',
-          stock: product.stock,
-          allow_backorders: product.allow_backorders === 1,
-          // Special cases that need custom logic
-          category: null, // We'll need to handle categories separately
-          tags: [], // We'll need to handle tags separately
-        };
+// Refs for file inputs
+const galleryFileInput = ref(null);
 
-        // Only assign fields that exist in formData to avoid adding unwanted properties
-        Object.keys(formData).forEach(key => {
-          if (fieldMappings.hasOwnProperty(key)) {
-            formData[key] = fieldMappings[key];
-          }
+// Status options
+const statusOptions = [
+  { label: 'Rascunho', value: 'draft' },
+  { label: 'Ativo', value: 'active' },
+  { label: 'Arquivado', value: 'archived' }
+];
+
+// Computed properties
+const pageTitle = computed(() => {
+  return route.params.id ? 'Editar Produto' : 'Novo Produto';
+});
+
+const submitButtonLabel = computed(() => {
+  return route.params.id ? 'Atualizar Produto' : 'Criar Produto';
+});
+
+const categoriesTree = computed(() => {
+  return buildCategoryTree(categories.value);
+});
+
+const formattedPublishedDate = computed(() => {
+  return 'Não publicado';
+});
+
+const formattedUpdatedDate = computed(() => {
+  return 'Nunca';
+});
+
+// Gallery methods
+const triggerGalleryFileInput = () => {
+  galleryFileInput.value?.click();
+};
+
+const handleGalleryFileSelect = (event) => {
+  const files = Array.from(event.target.files);
+  addGalleryImages(files);
+  event.target.value = '';
+};
+
+const handleGalleryFileDrop = (event) => {
+  const files = Array.from(event.dataTransfer.files);
+  addGalleryImages(files);
+};
+
+const addGalleryImages = (files) => {
+  files.forEach(file => {
+    if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        galleryImages.value.push({
+          file: file,
+          preview: e.target.result,
+          id: Date.now() + Math.random()
         });
-        
-        // Set featured image preview if exists
-        if (product.featured_image) {
-          featuredImagePreview.value = product.featured_image;
-        }
-
-        console.log(formData);
-        
-      }
-    } catch (error) {
-      console.error('Error loading product:', error);
+        updateFormDataGallery();
+      };
+      reader.readAsDataURL(file);
+    } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Falha ao carregar dados do produto',
-        life: 5000
+        detail: 'Arquivo deve ser uma imagem de até 10MB',
+        life: 3000
       });
-    } finally {
-      isLoadingProduct.value = false;
     }
+  });
+};
+
+const removeGalleryImage = (index) => {
+  galleryImages.value.splice(index, 1);
+  updateFormDataGallery();
+};
+
+const handleDragStart = (index) => {
+  draggedIndex.value = index;
+};
+
+const handleGalleryDrop = (targetIndex, event) => {
+  if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
+    const draggedItem = galleryImages.value[draggedIndex.value];
+    galleryImages.value.splice(draggedIndex.value, 1);
+    galleryImages.value.splice(targetIndex, 0, draggedItem);
+    updateFormDataGallery();
+  }
+  draggedIndex.value = null;
+};
+
+const updateFormDataGallery = () => {
+  formData.gallery = galleryImages.value.map(img => img.file || img.url);
+};
+
+// Category methods
+const buildCategoryTree = (categories) => {
+  const categoryMap = {};
+  const tree = [];
+
+  categories.forEach(category => {
+    categoryMap[category.id] = {
+      key: category.id,
+      label: category.name,
+      children: []
+    };
+  });
+
+  categories.forEach(category => {
+    if (category.parent_id) {
+      if (categoryMap[category.parent_id]) {
+        categoryMap[category.parent_id].children.push(categoryMap[category.id]);
+      }
+    } else {
+      tree.push(categoryMap[category.id]);
+    }
+  });
+
+  return tree;
+};
+
+const loadCategories = async () => {
+  try {
+    isLoadingCategories.value = true;
+    const response = await axios.get('/api/categories/tree');
+    categories.value = response.data.data || response.data;
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Falha ao carregar categorias',
+      life: 3000
+    });
+  } finally {
+    isLoadingCategories.value = false;
   }
 };
 
-onMounted(() => {
-  loadProductData();
-});
+const loadProduct = async () => {
+  if (!route.params.id) return;
 
-// Form submission
-const isSubmitting = ref(false);
+  try {
+    isLoadingProduct.value = true;
+    const response = await axios.get(`/api/products/${route.params.id}`);
+    const product = response.data.data || response.data;
 
-const validateForm = () => {
-  let valid = true;
-  
-  // Clear previous errors
-  errors.name = '';
-  errors.sku = '';
-  errors.price = '';
-  errors.category = '';
-  
-  // Validate required fields
-  if (!formData.name.trim()) {
-    errors.name = 'Nome do produto é obrigatório';
-    valid = false;
+    // Populate form data
+    Object.keys(formData).forEach(key => {
+      if (product[key] !== undefined) {
+        formData[key] = product[key];
+      }
+    });
+
+    // Load existing gallery images
+    if (product.gallery && product.gallery.length > 0) {
+      galleryImages.value = product.gallery.map((url, index) => ({
+        url: url,
+        preview: url,
+        id: `existing-${index}`
+      }));
+    }
+
+  } catch (error) {
+    console.error('Error loading product:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Falha ao carregar produto',
+      life: 3000
+    });
+    router.push({ name: 'products.index' });
+  } finally {
+    isLoadingProduct.value = false;
   }
-
-  
-  if (formData.price === null || formData.price <= 0) {
-    errors.price = 'Preço é obrigatório e deve ser maior que zero';
-    valid = false;
-  }
-  
-
-  return valid;
 };
 
 const handleSubmit = async () => {
-  console.log('Form submitted', formData); // Debug log
-  
-  if (!validateForm()) {
-    console.log('Validation failed', errors); // Debug log
-    return;
-  }
-
-  isSubmitting.value = true;
-
   try {
-    const submitData = new FormData();
-    
-    // Define field mappings for backend compatibility (only for fields that need different names)
-    const fieldMappings = {
-      category: 'category_id',
-    };
+    isSubmitting.value = true;
+    errors.value = {};
 
-    // Define fields that need special handling or should be excluded
-    const excludeFields = ['tags', 'inStock']; // inStock is computed, tags handled separately
+    const formDataToSend = new FormData();
     
-    // Automatically convert formData to FormData using Object.entries
-    Object.entries(formData).forEach(([key, value]) => {
-      if (excludeFields.includes(key)) return;
-      
-      const backendFieldName = fieldMappings[key] || key;
-      
-      // Handle different data types
-      if (value === null || value === undefined) {
-        submitData.append(backendFieldName, '');
-      } else if (typeof value === 'boolean') {
-        submitData.append(backendFieldName, value ? '1' : '0');
-      } else if (typeof value === 'number') {
-        submitData.append(backendFieldName, value.toString());
-      } else if (Array.isArray(value)) {
-        // Skip arrays here, handle them separately if needed
-        return;
-      } else {
-        submitData.append(backendFieldName, value);
+    // Add basic form data
+    Object.keys(formData).forEach(key => {
+      if (key !== 'gallery' && formData[key] !== null && formData[key] !== undefined) {
+        formDataToSend.append(key, formData[key]);
       }
     });
-    
-    // Handle special fields
-    if (formData.tags && formData.tags.length > 0) {
-      submitData.append('tags', JSON.stringify(formData.tags));
-    }
-    
-    if (featuredImage.value) {
-      submitData.append('featured_image', featuredImage.value);
-    }
 
-    console.log('Submitting data:', Object.fromEntries(submitData)); // Debug log
+    // Add gallery images
+    galleryImages.value.forEach((image, index) => {
+      if (image.file) {
+        formDataToSend.append(`gallery[${index}]`, image.file);
+      } else if (image.url) {
+        formDataToSend.append(`existing_gallery[${index}]`, image.url);
+      }
+    });
 
     let response;
-    if (isEditMode.value) {
-      // For edit mode, use PUT method
-      submitData.append('_method', 'PUT');
-      response = await axios.post(`/api/products/${productId.value}`, submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+    if (route.params.id) {
+      formDataToSend.append('_method', 'PUT');
+      response = await axios.post(`/api/products/${route.params.id}`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
     } else {
-      // For create mode, use POST method
-      response = await axios.post('/api/products', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      response = await axios.post('/api/products', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
     }
-
-    console.log('Response:', response); // Debug log
 
     toast.add({
       severity: 'success',
       summary: 'Sucesso',
-      detail: isEditMode.value ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!',
+      detail: route.params.id ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
       life: 3000
     });
 
-    // Redirect to edit page if creating new product
-    if (!isEditMode.value && response.data?.id) {
-      router.push({ name: 'products.edit', params: { id: response.data.id } });
-    }
+    router.push({ name: 'products.index' });
 
   } catch (error) {
-    console.error('Submit error:', error); // Debug log
+    console.error('Error submitting form:', error);
     
-    // Handle validation errors
-    if (error.response?.status === 422 && error.response?.data?.errors) {
-      const validationErrors = error.response.data.errors;
-      Object.keys(validationErrors).forEach(field => {
-        if (errors.hasOwnProperty(field)) {
-          errors[field] = validationErrors[field][0];
-        }
-      });
+    if (error.response?.status === 422) {
+      errors.value = error.response.data.errors || {};
     }
     
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.response?.data?.message || `Falha ao ${isEditMode.value ? 'atualizar' : 'cadastrar'} produto`,
+      detail: error.response?.data?.message || 'Falha ao salvar produto',
       life: 5000
     });
   } finally {
@@ -629,118 +555,83 @@ const handleSubmit = async () => {
   }
 };
 
-// Computed properties for dynamic content
-const pageTitle = computed(() => isEditMode.value ? 'Editar Produto' : 'Cadastrar Produto');
-const submitButtonLabel = computed(() => {
-  if (isSubmitting.value) {
-    return isEditMode.value ? 'Atualizando...' : 'Cadastrando...';
-  }
-  return isEditMode.value ? 'Atualizar Produto' : 'Cadastrar Produto';
+// Lifecycle
+onMounted(async () => {
+  await loadCategories();
+  await loadProduct();
 });
-
-// Product status computed properties
-const productStatus = computed(() => {
-  // You can customize this based on your product status logic
-  return formData.inStock ? 'Publicado' : 'Rascunho';
-});
-
-const productVisibility = computed(() => {
-  // You can customize this based on your product visibility logic
-  return 'Público';
-});
-
-const formattedPublishedDate = computed(() => {
-  // For now, using current date as example
-  // You should replace this with actual published_at field from your product data
-  const date = new Date();
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-});
-
-const formattedUpdatedDate = computed(() => {
-  // For now, using current date as example
-  // You should replace this with actual updated_at field from your product data
-  const date = new Date();
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-});
-
-// Methods for edit buttons
-const editStatus = () => {
-  // Implement status editing logic
-  console.log('Edit status clicked');
-};
-
-const editVisibility = () => {
-  // Implement visibility editing logic
-  console.log('Edit visibility clicked');
-};
 </script>
 
 <style scoped>
 .product-form-container {
-  margin: 0 auto;
-  padding: 2rem;
-  max-width: 1380px;
+  padding: 1rem;
+}
+
+.form-card {
+  height: fit-content;
 }
 
 .form-divider {
   width: 2px;
-  height: 100%;
-  background-color: #f3f3f3;
-  margin: 0 auto;
+  height: 200px;
+  background: linear-gradient(to bottom, transparent, #e5e7eb, transparent);
+}
+
+/* Gallery Styles */
+.gallery-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fafafa;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gallery-item:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-item.is-primary {
+  border-color: #10b981;
+  border-width: 3px;
+}
+
+.gallery-item.is-primary::after {
+  content: '';
   position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #10b981;
+  border-radius: 6px;
+  pointer-events: none;
 }
 
-.featured-image-section {
-  padding: 0rem;
-}
-
-.image-upload-container {
-  position: relative;
-}
-
-.upload-placeholder {
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  padding: 3rem 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #f9fafb;
-}
-
-.upload-placeholder:hover {
-  border-color: #6366f1;
-  background: #f0f9ff;
-}
-
-.image-preview-container {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.featured-image-preview {
+.gallery-image {
   width: 100%;
-  height: 300px;
+  height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.image-overlay {
+.gallery-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -748,88 +639,98 @@ const editVisibility = () => {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  padding: 0.5rem;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
-.image-preview-container:hover .image-overlay {
+.gallery-item:hover .gallery-overlay {
   opacity: 1;
 }
 
-.form-card {
-  height: fit-content;
-  box-shadow: none;
+.primary-badge {
+  background: #10b981;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-.form-card .p-card-content {
+.gallery-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
-/* Product Status Card Styles */
+.gallery-add-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  border-style: dashed;
+  transition: all 0.2s ease;
+}
+
+.gallery-add-button:hover {
+  background: #f3f4f6;
+  border-color: #6b7280;
+}
+
+/* Status Fields */
 .product-status-fields {
-  padding: 0;
+  padding: 1rem;
 }
 
-.status-field:last-child {
-  padding-bottom: 0;
+.status-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .status-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
 }
 
 .status-label {
   font-weight: 500;
-  color: #6b7280;
-  font-size: 1rem;
-  min-width: fit-content;
+  color: #374151;
 }
 
 .status-value {
-  color: #374151;
-  font-size: 1rem;
-  flex: 1;
-  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .status-select-button {
   flex: 1;
+  max-width: 200px;
 }
 
-.status-select-button .p-selectbutton .p-button {
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
+/* Inventory Section */
+.inventory-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fafafa;
 }
 
-.status-select-button .p-selectbutton .p-button.p-highlight {
-  background: var(--p-primary-color);
-  border-color: var(--p-primary-color);
-  color: var(--p-primary-contrast-color);
-}
-
-.status-edit-btn {
-  padding: 0.25rem 0.5rem !important;
-  font-size: 0.75rem !important;
-  height: auto !important;
-  min-height: auto !important;
-}
-
+/* Responsive */
 @media (max-width: 768px) {
   .form-divider {
     width: 100%;
-    height: 1px;
-    background-color: #e5e7eb;
-    margin: 2rem 0;
+    height: 2px;
+    margin: 1rem 0;
   }
   
-  .product-form-container {
-    padding: 1rem;
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
   }
 }
 </style>

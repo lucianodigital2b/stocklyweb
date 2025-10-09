@@ -4,6 +4,25 @@ function page (path) {
 }
 
 export default [
+  {
+    path: '/categories',
+    name: 'categories.index',
+    component: () => import('../pages/categories/CategoryList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/categories/create',
+    name: 'categories.create',
+    component: () => import('../pages/categories/CategoryForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/categories/:id/edit',
+    name: 'categories.edit',
+    component: () => import('../pages/categories/CategoryForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
   { path: '/', component: page('dashboard'), name: '/', meta: { layout: 'AppLayout' } },  
   { path: '/dashboard', component: page('dashboard'), name: 'dashboard', meta: { layout: 'AppLayout' } },  
   { path: '/login', component: () => import('../pages/auth/Login.vue'), name: 'login', meta: { layout: 'Basic' } },  
@@ -118,6 +137,14 @@ export default [
       { path: 'profile', name: 'settings.profile', component: page('settings/profile') },
       { path: 'password', name: 'settings.password', component: page('settings/password') }
     ]
+  },
+
+  // Profile Settings Route
+  {
+    path: '/profile',
+    name: 'profile.settings',
+    component: () => import('../pages/profile/ProfileSettings.vue'),
+    meta: { layout: 'AppLayout' }
   },
 
   { path: '/:pathMatch(.*)*', component: () => import('../pages/errors/404.vue'), meta: { layout: 'AppLayout' } }

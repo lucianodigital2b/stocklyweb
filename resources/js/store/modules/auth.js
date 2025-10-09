@@ -20,6 +20,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
     },
+    updateUser(userData) {
+      this.user = { ...this.user, ...userData };
+    },
   },
   
 });

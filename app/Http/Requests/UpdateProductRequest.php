@@ -44,7 +44,10 @@ class UpdateProductRequest extends FormRequest
             'allow_backorders' => 'nullable|boolean',
             'category_id' => 'nullable|exists:categories,id',
             'tags' => 'nullable|json',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'existing_gallery' => 'nullable|array',
+            'replace_gallery' => 'nullable|boolean',
         ];
     }
 }

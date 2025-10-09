@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
@@ -78,8 +79,76 @@ class Product extends Model implements HasMedia
      */
     const PRODUCT_TYPE_VARIATION = 'variation';
 
-    const THUMB_FOLDER = 'product';
     const MEDIAS_FOLDER = 'product-medias';
+
+    /**
+     * Register media collections for the product.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('thumbnail')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+        $this->addMediaCollection('gallery')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+    }
+
+    /**
+     * Register media conversions for the product.
+     */
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10)
+            ->performOnCollections('thumbnail', 'gallery');
+
+        $this->addMediaConversion('preview')
+            ->width(800)
+            ->height(600)
+            ->sharpen(10)
+            ->performOnCollections('thumbnail', 'gallery');
+    }
+
+    /**
+     * Get the product's thumbnail image URL.
+     */
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        $thumbnail = $this->getFirstMedia('thumbnail');
+        return $thumbnail ? $thumbnail->getUrl() : null;
+    }
+
+    /**
+     * Get the product's thumbnail image URL with conversion.
+     */
+    public function getThumbnailThumbUrlAttribute(): ?string
+    {
+        $thumbnail = $this->getFirstMedia('thumbnail');
+        return $thumbnail ? $thumbnail->getUrl('thumb') : null;
+    }
+
+    /**
+     * Get all gallery images URLs.
+     */
+    public function getGalleryUrlsAttribute(): array
+    {
+        return $this->getMedia('gallery')->map(function ($media) {
+            return $media->getUrl();
+        })->toArray();
+    }
+
+    /**
+     * Get all gallery images URLs with conversion.
+     */
+    public function getGalleryThumbUrlsAttribute(): array
+    {
+        return $this->getMedia('gallery')->map(function ($media) {
+            return $media->getUrl('thumb');
+        })->toArray();
+    }
 
 
     public function store()
