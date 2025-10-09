@@ -45,7 +45,7 @@ class EntryService
         }
     }
 
-    public function store($data)
+    public function createEntry($data)
     {
         $entry = isset($data['id']) && ! empty($data['id']) ? $this->get($data['id']) : new Entry;
 
@@ -53,7 +53,7 @@ class EntryService
             $data['company_id'] = auth()->user()->company_id;
         }
 
-        $data['value'] = isset($data['id']) && ! empty($data['id']) ? $entry->value : formatBrlToDecimal($data['value']);
+        $data['value'] = isset($data['id']) && ! empty($data['id']) ? $entry->value : $data['value'];
 
         $paid_at = $entry->paid_at;
 
@@ -72,7 +72,6 @@ class EntryService
                 'user_name' => auth()->user()?->name,
             ];
 
-            Log::create($data);
         }
 
         if ($saved && isset($data['generate_bank_slip']) && $data['generate_bank_slip'] == 'on' && empty($entry->external_code)) {

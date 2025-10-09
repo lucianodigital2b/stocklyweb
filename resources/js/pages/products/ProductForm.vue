@@ -503,7 +503,9 @@ const handleSubmit = async () => {
     // Add basic form data
     Object.keys(formData).forEach(key => {
       if (key !== 'gallery' && formData[key] !== null && formData[key] !== undefined) {
-        formDataToSend.append(key, formData[key]);
+        // Convert boolean values to strings for FormData
+        const value = typeof formData[key] === 'boolean' ? (formData[key] ? '1' : '0') : formData[key];
+        formDataToSend.append(key, value);
       }
     });
 

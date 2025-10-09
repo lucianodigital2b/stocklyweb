@@ -29,7 +29,7 @@
                         </div>
                         <div>
                             <div class="font-semibold">{{ slotProps.data.name }}</div>
-                            <div class="text-sm text-gray-500">SKU: {{ slotProps.data.sku }}</div>
+                            <div v-if="slotProps.data.sku !== null" class="text-sm text-gray-500">SKU: {{ slotProps.data.sku }}</div>
                         </div>
                     </div>
                 </template>

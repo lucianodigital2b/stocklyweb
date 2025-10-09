@@ -49,12 +49,29 @@
                   <small v-if="errors.operation" class="p-error text-red-600">{{ errors.operation }}</small>
                 </div>
 
-                <!-- Supplier -->
+                <!-- Supplier (for Saída) / Customer (for Entrada) -->
                 <div class="field mb-4">
-                  <Label for="supplier_id">
-                    Fornecedor
+                  <Label :for="formData.operation === 1 ? 'customer_id' : 'supplier_id'">
+                    {{ formData.operation === 1 ? 'Cliente' : 'Fornecedor' }}
                   </Label>
+                  
+                  <!-- Customer dropdown for Entrada (operation = 1) -->
                   <Dropdown 
+                    v-if="formData.operation === 1"
+                    id="customer_id" 
+                    v-model="formData.customer_id" 
+                    :options="customers" 
+                    optionLabel="name" 
+                    optionValue="id"
+                    placeholder="Selecione um cliente"
+                    class="w-full"
+                    filter
+                    showClear
+                  />
+                  
+                  <!-- Supplier dropdown for Saída (operation = 2) -->
+                  <Dropdown 
+                    v-else
                     id="supplier_id" 
                     v-model="formData.supplier_id" 
                     :options="suppliers" 
@@ -293,6 +310,7 @@ const formData = reactive({
   value: null,
   operation: 1, // Default to revenue
   supplier_id: null,
+  customer_id: null,
   cost_center_id: null,
   payment_method: null,
   due_at: null,
@@ -315,6 +333,7 @@ const isSubmitting = ref(false);
 
 // Options data
 const suppliers = ref([]);
+const customers = ref([]);
 const costCenters = ref([]);
 
 // Operation options
@@ -332,16 +351,18 @@ const paymentMethodOptions = ref([
   { label: 'Débito', value: 'debit' }
 ]);
 
-// Load suppliers and cost centers
+// Load suppliers, customers and cost centers
 const loadFormData = async () => {
   isLoadingData.value = true;
   try {
-    const [suppliersResponse, costCentersResponse] = await Promise.all([
+    const [suppliersResponse, customersResponse, costCentersResponse] = await Promise.all([
       axios.get('/api/suppliers'),
+      axios.get('/api/customers'),
       axios.get('/api/cost-centers')
     ]);
     
     suppliers.value = suppliersResponse.data.data || suppliersResponse.data;
+    customers.value = customersResponse.data.data || customersResponse.data;
     costCenters.value = costCentersResponse.data.data || costCentersResponse.data;
   } catch (error) {
     console.error('Error loading form data:', error);
@@ -527,6 +548,17 @@ const formatCurrency = (value) => {
     currency: 'BRL'
   }).format(value);
 };
+
+// Watch for operation changes to clear supplier/customer fields
+watch(() => formData.operation, (newOperation) => {
+  if (newOperation === 1) {
+    // Entrada - clear supplier
+    formData.supplier_id = null;
+  } else if (newOperation === 2) {
+    // Saída - clear customer
+    formData.customer_id = null;
+  }
+});
 
 // Load data on component mount
 onMounted(async () => {

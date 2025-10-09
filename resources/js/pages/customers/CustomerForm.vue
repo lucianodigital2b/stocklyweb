@@ -286,49 +286,7 @@
               </div>
             </ToggleCard>
 
-            <!-- Customer Avatar Section -->
-            <div class="customer-avatar-section">
-              <h4 class="mb-3">Avatar do Cliente</h4>
-              
-              <!-- Avatar Upload Area -->
-              <div class="avatar-upload-container">
-                <div 
-                  v-if="!customerAvatar" 
-                  class="upload-placeholder"
-                  @click="triggerFileInput"
-                  @dragover.prevent
-                  @drop.prevent="handleDrop"
-                >
-                  <i class="pi pi-user text-4xl text-gray-400 mb-3"></i>
-                  <p class="text-gray-600 mb-2">Clique para fazer upload ou arraste uma imagem</p>
-                  <small class="text-gray-500">PNG, JPG até 5MB</small>
-                </div>
-                
-                <div v-else class="avatar-preview-container">
-                  <img :src="customerAvatarPreview" alt="Avatar Preview" class="customer-avatar-preview" />
-                  <div class="avatar-overlay">
-                    <Button 
-                      icon="pi pi-pencil" 
-                      class="p-button-rounded p-button-secondary p-button-sm mr-2"
-                      @click="triggerFileInput"
-                    />
-                    <Button 
-                      icon="pi pi-trash" 
-                      class="p-button-rounded p-button-danger p-button-sm"
-                      @click="removeCustomerAvatar"
-                    />
-                  </div>
-                </div>
-                
-                <input 
-                  ref="fileInput"
-                  type="file" 
-                  accept="image/*" 
-                  @change="handleFileSelect"
-                  style="display: none"
-                />
-              </div>
-            </div>
+            
           </div>
         </div>
       </template>
