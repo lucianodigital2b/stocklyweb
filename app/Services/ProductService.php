@@ -13,7 +13,7 @@ class ProductService
 
     public function list($data = []) 
     {
-        $products = Product::with('store');
+        $products = Product::query();
 
         if (isset($data['q'])) {
             if(isset($data['q']) && !empty($data['q'])) {   

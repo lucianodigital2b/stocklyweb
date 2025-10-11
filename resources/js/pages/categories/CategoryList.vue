@@ -31,7 +31,13 @@
                 </div>
             </template>
 
-
+            <Column field="name" header="Nome">
+                <template #body="slotProps">
+                    <div class="text-sm">
+                        {{ slotProps.data.name }}
+                    </div>
+                </template>
+            </Column>
             <Column field="products_count" header="Produtos">
                 <template #body="slotProps">
                     <div class="flex items-center gap-2">

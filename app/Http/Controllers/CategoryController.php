@@ -28,15 +28,14 @@ class CategoryController extends Controller
                 'q' => $request->get('q'),
                 'store_id' => $request->get('store_id'),
                 'company_id' => $request->get('company_id'),
-                'limit' => $request->get('limit', 15),
+                'limit' => $request->get('per_page', 15), // Changed from 'limit' to 'per_page' to match frontend
             ];
 
             $categories = $this->categoryService->list($args);
 
-            return response()->json([
-                'success' => true,
-                'data' => $categories,
-            ]);
+            // Return the paginated response directly without wrapping in additional structure
+            // This maintains Laravel's pagination structure that the frontend expects
+            return response()->json($categories);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

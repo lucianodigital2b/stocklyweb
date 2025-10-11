@@ -56,6 +56,7 @@ trait MultiTenant
 
     public function scopeAllTenants($query)
     {
+
         return $query->withoutGlobalScope(MultiTenantScope::class);
     }
 

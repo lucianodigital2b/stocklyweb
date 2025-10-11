@@ -24,7 +24,6 @@ class StoreCategoryRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'status' => 'nullable|string|in:active,inactive',
-            'store_id' => 'nullable|integer|exists:stores,id',
         ];
     }
 }

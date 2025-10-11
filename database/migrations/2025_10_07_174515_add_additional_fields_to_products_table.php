@@ -26,6 +26,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable()->after('product_visibility_id');
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade')->after('published_at');
             $table->foreignId('pair_id')->nullable()->constrained('products')->onDelete('set null')->after('product_id');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
             $table->string('ean')->nullable()->after('pair_id');
             $table->boolean('allow_backorders')->nullable();
         });

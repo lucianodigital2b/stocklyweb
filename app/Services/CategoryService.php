@@ -70,11 +70,12 @@ class CategoryService
 
         try {
             // Add company_id from authenticated user if not provided
-            if (!isset($data['company_id'])) {
-                $data['company_id'] = auth()->user()->company_id;
-            }
+            // if (!isset($data['company_id'])) {
+            //     $data['company_id'] = auth()->user()->company_id;
+            // }
 
             // Create the category
+            // dd($data);
             $category = Category::create($data);
 
             DB::commit();

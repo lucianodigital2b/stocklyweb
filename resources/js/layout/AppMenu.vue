@@ -28,7 +28,7 @@ const model = ref([
             },
             {
                 label: 'Fornecedores',
-                icon: 'pi pi-fw pi-users',
+                icon: 'pi pi-fw pi-user',
                 items: [
                     {
                         label: 'Cadastrar',
@@ -56,12 +56,12 @@ const model = ref([
             },
             {
                 label: 'Centros de Custo',
-                icon: 'pi pi-fw pi-users',
+                icon: 'pi pi-fw pi-circle',
                 to: '/cost-centers'
             },
             {
                 label: 'Produtos',
-                icon: 'pi pi-fw pi-users',
+                icon: 'pi pi-fw pi-box',
                 items: [
                     {
                         label: 'Cadastrar',
@@ -87,7 +87,7 @@ const model = ref([
             },
             {
                 label: 'Pedidos',
-                icon: 'pi pi-fw pi-users',
+                icon: 'pi pi-fw pi-list-check',
                 items: [
                     {
                         label: 'Listar',
@@ -124,7 +124,6 @@ const model = ref([
                 //     },
                 // ]
             },
-            { label: 'Configurações', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
         ]
     },
     
