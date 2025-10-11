@@ -188,14 +188,25 @@ class OrderService
      */
     public function getOrders(array $filters = [], int $perPage = 10)
     {
-        $query = Order::query();
+        $query = Order::with(['customer', 'items']);
 
         // Apply filters
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
-        return $query->paginate($perPage);
+        if (isset($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function($customerQuery) use ($search) {
+                      $customerQuery->where('name', 'like', "%{$search}%")
+                                   ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**

@@ -224,6 +224,21 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- Allow Credit -->
+                  <div class="field mb-4">
+                    <div class="flex align-items-center gap-3">
+                      <Checkbox 
+                        id="allow_credit"
+                        v-model="formData.allow_credit" 
+                        :binary="true"
+                      />
+                      <div>
+                        <Label for="allow_credit">Permitir Fiado</Label>
+                        <small class="text-gray-500">Cliente pode fazer compras a prazo.</small>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </template>
             </Card>
@@ -342,6 +357,7 @@ const formData = reactive({
   birth_date: null,
   customer_type: 'regular',
   newsletter_subscription: false,
+  allow_credit: false,
   status: 'active'
 });
 
@@ -479,6 +495,7 @@ const loadCustomerData = async () => {
           birth_date: customer.birth_date ? new Date(customer.birth_date) : null,
           customer_type: customer.customer_type || 'regular',
           newsletter_subscription: customer.newsletter_subscription === 1,
+          allow_credit: customer.allow_credit === 1,
           status: customer.status || 'active'
         };
 

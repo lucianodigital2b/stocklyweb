@@ -42,4 +42,9 @@ class Order extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function history()
+    {
+        return $this->hasMany(OrderHistory::class)->orderBy('created_at', 'desc');
+    }
 }

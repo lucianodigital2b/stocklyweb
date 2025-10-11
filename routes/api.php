@@ -43,6 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders/{order}/meta/{key}', [OrderController::class, 'updateMeta']);
     Route::delete('orders/{order}/meta/{key}', [OrderController::class, 'deleteMeta']);
 
+    // Order history routes
+    Route::post('orders/{order}/history', [OrderController::class, 'addHistory']);
+    Route::get('orders/{order}/history', [OrderController::class, 'getHistory']);
+    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
     // Store management routes
     Route::apiResource('stores', StoreController::class)->except(['index', 'update', 'destroy']);

@@ -130,6 +130,25 @@ export default [
   },
 
   {
+    path: '/orders',
+    name: 'orders.index',
+    component: () => import('../pages/orders/OrderList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/orders/create',
+    name: 'orders.create',
+    component: () => import('../pages/orders/OrderForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/orders/:id/edit',
+    name: 'orders.edit',
+    component: () => import('../pages/orders/OrderForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
     path: '/settings',
     component: page('settings/index'),
     children: [

@@ -27,6 +27,7 @@ class Customer extends Model
         'customer_type',
         'newsletter_subscription',
         'status',
+        'allow_credit',
         'company_id'
     ];
 

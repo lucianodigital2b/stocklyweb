@@ -61,18 +61,18 @@ class EntryService
 
         $saved = $entry->save();
 
-        if ($paid_at == null && isset($data['paid_at']) && $data['paid_at'] != null) {
-            $data = [
-                'company_id' => $entry->company_id,
-                'user_id' => auth()->user()?->id,
-                'customer_id' => $entry?->service?->customer?->id,
-                'description' => $entry?->service ? "Lançamento #$entry->id ({$entry->service->name}) foi marcado como pago" : "Lançamento #$entry->id foi marcado como pago",
-                'entity' => Entry::class,
-                'action' => 'update',
-                'user_name' => auth()->user()?->name,
-            ];
+        // if ($paid_at == null && isset($data['paid_at']) && $data['paid_at'] != null) {
+        //     $data = [
+        //         'company_id' => $entry->company_id,
+        //         'user_id' => auth()->user()?->id,
+        //         'customer_id' => $entry?->service?->customer?->id,
+        //         'description' => $entry?->service ? "Lançamento #$entry->id ({$entry->service->name}) foi marcado como pago" : "Lançamento #$entry->id foi marcado como pago",
+        //         'entity' => Entry::class,
+        //         'action' => 'update',
+        //         'user_name' => auth()->user()?->name,
+        //     ];
 
-        }
+        // }
 
         if ($saved && isset($data['generate_bank_slip']) && $data['generate_bank_slip'] == 'on' && empty($entry->external_code)) {
             $asaasService = new Asaas;

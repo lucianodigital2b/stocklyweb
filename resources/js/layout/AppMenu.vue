@@ -90,12 +90,12 @@ const model = ref([
                 icon: 'pi pi-fw pi-users',
                 items: [
                     {
-                        label: 'Cadastrar',
-                        to: '/products'
+                        label: 'Listar',
+                        to: '/orders'
                     },
                     {
-                        label: 'Listar',
-                        to: '/products/create'
+                        label: 'Cadastrar',
+                        to: '/orders/create'
                     },
                 ]
             },
