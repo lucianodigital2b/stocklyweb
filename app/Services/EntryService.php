@@ -5,87 +5,202 @@ namespace App\Services;
 use App\Models\Entry;
 use App\Models\Log;
 use App\Services\Asaas\Asaas;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 class EntryService
 {
     public function list($data = [])
     {
-        $entries = new Entry;
+        try {
+            $entries = new Entry;
 
-        if (isset($data['where'])) {
-            foreach ($data['where'] as $where) {
-                if ($where['operator'] == 'between') {
-                    $entries = $entries->whereBetween($where['field'], $where['value']);
-                } else {
-                    $entries = $entries->where($where['field'], $where['operator'], $where['value']);
+            if (isset($data['where'])) {
+                foreach ($data['where'] as $where) {
+                    if ($where['operator'] == 'between') {
+                        $entries = $entries->whereBetween($where['field'], $where['value']);
+                    } else {
+                        $entries = $entries->where($where['field'], $where['operator'], $where['value']);
+                    }
                 }
             }
-        }
 
-        if (isset($data['s']) && ! empty($data['s'])) {
-            $searchbleFields = ['observations'];
+            if (isset($data['s']) && ! empty($data['s'])) {
+                $searchbleFields = ['observations', 'external_code', 'account', 'barcode'];
 
-            foreach ($searchbleFields as $i => $searchbleField) {
-                if ($i > 0) {
-                    $entries = $entries->orWhere($searchbleField, 'LIKE', '%'.$data['s'].'%');
-                } else {
-                    $entries = $entries->where($searchbleField, 'LIKE', '%'.$data['s'].'%');
+                foreach ($searchbleFields as $i => $searchbleField) {
+                    if ($i > 0) {
+                        $entries = $entries->orWhere($searchbleField, 'LIKE', '%'.$data['s'].'%');
+                    } else {
+                        $entries = $entries->where($searchbleField, 'LIKE', '%'.$data['s'].'%');
+                    }
                 }
             }
-        }
 
-        if (isset($data['orderBy']) && isset($data['order'])) {
-            $entries = $entries->orderBy($data['orderBy'], $data['order']);
-        }
+            if (isset($data['orderBy']) && isset($data['order'])) {
+                $entries = $entries->orderBy($data['orderBy'], $data['order']);
+            } else {
+                // Default ordering by created_at desc
+                $entries = $entries->orderBy('created_at', 'desc');
+            }
 
-        if (isset($data['limit'])) {
-            return $entries->paginate($data['limit']);
-        } else {
-            return $entries->get();
+            // Include relationships
+            $entries = $entries->with(['supplier', 'costCenter', 'order.customer']);
+
+            if (isset($data['limit'])) {
+                return $entries->paginate($data['limit']);
+            } else {
+                return $entries->get();
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('Error retrieving entries: ' . $e->getMessage());
         }
     }
 
     public function createEntry($data)
     {
-        $entry = isset($data['id']) && ! empty($data['id']) ? $this->get($data['id']) : new Entry;
-
-        if (! isset($data['id']) || empty($data['id'])) {
+        try {
+            $this->validateEntryData($data);
+            
+            $entry = new Entry;
             $data['company_id'] = auth()->user()->company_id;
+
+            $entry->fill($data);
+            $saved = $entry->save();
+
+            if (!$saved) {
+                throw new \Exception('Failed to save entry');
+            }
+
+            if ($saved && isset($data['generate_bank_slip']) && $data['generate_bank_slip'] == 'on' && empty($entry->external_code)) {
+                $asaasService = new Asaas;
+                $asaasService->setPaymentMethod($entry->payment_method);
+                $asaasService->pay($entry);
+            }
+
+            return $entry;
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new \Exception('Error creating entry: ' . $e->getMessage());
         }
+    }
 
-        $data['value'] = isset($data['id']) && ! empty($data['id']) ? $entry->value : $data['value'];
+    public function updateEntry($id, $data)
+    {
+        try {
+            $this->validateEntryData($data, $id);
+            
+            $entry = $this->get($id);
+            
+            if (!$entry) {
+                throw new ModelNotFoundException('Entry not found');
+            }
 
-        $paid_at = $entry->paid_at;
+            // Store original paid_at value for comparison
+            $originalPaidAt = $entry->paid_at;
 
-        $entry->fill($data);
+            $entry->fill($data);
+            $saved = $entry->save();
 
-        $saved = $entry->save();
+            if (!$saved) {
+                throw new \Exception('Failed to update entry');
+            }
 
-        // if ($paid_at == null && isset($data['paid_at']) && $data['paid_at'] != null) {
-        //     $data = [
-        //         'company_id' => $entry->company_id,
-        //         'user_id' => auth()->user()?->id,
-        //         'customer_id' => $entry?->service?->customer?->id,
-        //         'description' => $entry?->service ? "Lançamento #$entry->id ({$entry->service->name}) foi marcado como pago" : "Lançamento #$entry->id foi marcado como pago",
-        //         'entity' => Entry::class,
-        //         'action' => 'update',
-        //         'user_name' => auth()->user()?->name,
-        //     ];
+            // Handle bank slip generation if needed
+            if ($saved && isset($data['generate_bank_slip']) && $data['generate_bank_slip'] == 'on' && empty($entry->external_code)) {
+                $asaasService = new Asaas;
+                $asaasService->setPaymentMethod($entry->payment_method);
+                $asaasService->pay($entry);
+            }
 
-        // }
+            // Log payment status change if applicable
+            if ($originalPaidAt == null && isset($data['paid_at']) && $data['paid_at'] != null) {
+                // Entry was marked as paid - could add logging here if needed
+            }
 
-        if ($saved && isset($data['generate_bank_slip']) && $data['generate_bank_slip'] == 'on' && empty($entry->external_code)) {
-            $asaasService = new Asaas;
-
-            $asaasService->setPaymentMethod($entry->payment_method);
-            $asaasService->pay($entry);
+            return $entry;
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new \Exception('Error updating entry: ' . $e->getMessage());
         }
+    }
 
-        return $entry;
+    public function deleteEntry($id)
+    {
+        try {
+            $entry = $this->get($id);
+            
+            if (!$entry) {
+                throw new ModelNotFoundException('Entry not found');
+            }
+
+            $deleted = $entry->delete();
+            
+            if (!$deleted) {
+                throw new \Exception('Failed to delete entry');
+            }
+
+            return $deleted;
+        } catch (ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new \Exception('Error deleting entry: ' . $e->getMessage());
+        }
     }
 
     public function get($value, $field = 'id')
     {
-        return Entry::where($field, $value)->first();
+        try {
+            return Entry::with(['supplier', 'costCenter', 'order'])->where($field, $value)->first();
+        } catch (\Exception $e) {
+            throw new \Exception('Error retrieving entry: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Validate entry data
+     */
+    private function validateEntryData($data, $entryId = null)
+    {
+        $rules = [
+            'value' => 'required|numeric|min:0.01',
+            'operation' => 'required|in:1,2',
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
+            'order_id' => 'nullable|exists:orders,id',
+            'cost_center_id' => 'nullable|exists:cost_centers,id',
+            'payment_method' => 'nullable|in:pix,bank_slip,money,credit,debit',
+            'due_at' => 'nullable|date',
+            'paid_at' => 'nullable|date',
+            'external_code' => 'nullable|string|max:255',
+            'account' => 'nullable|string|max:255',
+            'barcode' => 'nullable|string|max:255',
+            'observations' => 'nullable|string|max:1000',
+            'payment_info' => 'nullable|string|max:500',
+        ];
+
+        $validator = validator($data, $rules);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        // Custom validation: ensure supplier_id is provided for expense operations
+        if (isset($data['operation']) && $data['operation'] == Entry::OPERATION_EXPENSE && empty($data['supplier_id'])) {
+            throw ValidationException::withMessages([
+                'supplier_id' => ['Fornecedor é obrigatório para operações de saída.']
+            ]);
+        }
+
+        // Custom validation: ensure order_id is provided for revenue operations
+        if (isset($data['operation']) && $data['operation'] == Entry::OPERATION_REVENUE && empty($data['order_id'])) {
+            throw ValidationException::withMessages([
+                'order_id' => ['Pedido é obrigatório para operações de entrada.']
+            ]);
+        }
     }
 }

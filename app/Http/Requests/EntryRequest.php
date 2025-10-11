@@ -25,7 +25,7 @@ class EntryRequest extends FormRequest
             'value' => 'required|numeric|min:0',
             'cost_center_id' => 'nullable|exists:cost_centers,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'customer_id' => 'nullable|exists:customers,id',
+            'order_id' => 'nullable|exists:orders,id',
             'due_at' => 'nullable|date',
             'paid_at' => 'nullable|date',
             'operation' => 'required|integer|in:1,2',

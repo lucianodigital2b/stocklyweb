@@ -78,6 +78,11 @@ class Entry extends Model
         return $this->belongsTo(CostCenter::class);
     }
 
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
     public function getStatus()
     {
         if (! empty($this->paid_at)) {

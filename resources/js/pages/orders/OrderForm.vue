@@ -35,27 +35,28 @@
           <template #title>
             <div class="flex items-center justify-between">
               <span>Produtos</span>
-              <Button 
+              <!-- <Button 
                 label="Navegar" 
                 severity="secondary" 
                 outlined 
                 size="small"
                 @click="showProductBrowser = true"
-              />
+              /> -->
             </div>
           </template>
           <template #content>
             <div class="space-y-4">
               <!-- Search Products -->
-              <div class="relative">
-                <InputText
-                  v-model="productSearch"
+
+              <IconField>
+                <InputIcon class="pi pi-search" />
+                <InputText 
+                 v-model="productSearch"
                   placeholder="Buscar produtos"
                   class="w-full pl-10"
                   @input="searchProducts"
                 />
-                <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              </div>
+              </IconField>
 
               <!-- Product Search Results -->
               <div v-if="searchResults.length > 0" class="border rounded-lg max-h-48 overflow-y-auto">
@@ -238,15 +239,16 @@
           <template #title>Cliente</template>
           <template #content>
             <div class="space-y-4">
-              <div class="relative">
-                <InputText
+
+              <IconField>
+                <InputIcon class="pi pi-search" />
+                <InputText 
                   v-model="customerSearch"
-                  placeholder="Buscar ou criar um cliente"
+                  placeholder="Buscar cliente"
                   class="w-full pl-10"
                   @input="searchCustomers"
                 />
-                <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              </div>
+              </IconField>
 
               <!-- Customer Search Results -->
               <div v-if="customerSearchResults.length > 0" class="border rounded-lg max-h-48 overflow-y-auto">

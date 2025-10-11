@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EntryRequest;
 use App\Models\Entry;
 use App\Services\EntryService;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,31 +52,7 @@ class EntryController extends Controller
         return response()->json($entries);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $this->authorize('create', Entry::class);
-
-        $entry = new Entry;
-
-        $query = [
-            'where' => [
-                [
-                    'field' => 'company_id',
-                    'operator' => '=',
-                    'value' => auth()->user()->company_id,
-                ],
-            ],
-        ];
-
-        $services = $this->serviceRepository->list($query);
-        $suppliers = $this->supplierRepository->list($query);
-        $costCenters = $this->costCenterRepository->list($query);
-
-        return view('modules.entries.create', compact('entry', 'services', 'suppliers', 'costCenters'));
-    }
+  
 
     /**
      * Store a newly created resource in storage.
@@ -98,7 +75,7 @@ class EntryController extends Controller
      */
     public function show(Entry $entry): JsonResponse
     {
-        $entry = $this->entryService->getEntry($entry->id);
+        $entry = $this->entryService->get($entry->id);
         
         return response()->json($entry);
     }
@@ -132,7 +109,7 @@ class EntryController extends Controller
 
     public function receipt(Request $request, Entry $entry)
     {
-        if ($entry->company_id != auth()->user()->company_id) {
+        if ($entry->company_id != Auth::user()->company_id) {
             abort(403);
         }
 

@@ -49,25 +49,43 @@
                   <small v-if="errors.operation" class="p-error text-red-600">{{ errors.operation }}</small>
                 </div>
 
-                <!-- Supplier (for Saída) / Customer (for Entrada) -->
+                <!-- Order (for Entrada) / Supplier (for Saída) -->
                 <div class="field mb-4">
-                  <Label :for="formData.operation === 1 ? 'customer_id' : 'supplier_id'">
-                    {{ formData.operation === 1 ? 'Cliente' : 'Fornecedor' }}
+                  <Label :for="formData.operation === 1 ? 'order_id' : 'supplier_id'">
+                    {{ formData.operation === 1 ? 'Pedido' : 'Fornecedor' }}
                   </Label>
                   
-                  <!-- Customer dropdown for Entrada (operation = 1) -->
+                  <!-- Order dropdown for Entrada (operation = 1) -->
                   <Dropdown 
                     v-if="formData.operation === 1"
-                    id="customer_id" 
-                    v-model="formData.customer_id" 
-                    :options="customers" 
-                    optionLabel="name" 
+                    id="order_id" 
+                    v-model="formData.order_id" 
+                    :options="orders" 
+                    optionLabel="id" 
                     optionValue="id"
-                    placeholder="Selecione um cliente"
+                    placeholder="Selecione um pedido"
                     class="w-full"
                     filter
                     showClear
-                  />
+                  >
+                    <template #value="slotProps">
+                      <div v-if="slotProps.value" class="flex align-items-center">
+                        <span>Pedido #{{ slotProps.value }}</span>
+                      </div>
+                      <span v-else>{{ slotProps.placeholder }}</span>
+                    </template>
+                    <template #option="slotProps">
+                      <div class="flex align-items-center">
+                        <div>
+                          <div class="font-bold">Pedido #{{ slotProps.option.id }}</div>
+                          <div class="text-sm text-color-secondary">
+                            {{ slotProps.option.customer?.name || 'Cliente não informado' }} - 
+                            {{ formatCurrency(slotProps.option.total || 0) }}
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </Dropdown>
                   
                   <!-- Supplier dropdown for Saída (operation = 2) -->
                   <Dropdown 
@@ -311,6 +329,7 @@ const formData = reactive({
   operation: 1, // Default to revenue
   supplier_id: null,
   customer_id: null,
+  order_id: null,
   cost_center_id: null,
   payment_method: null,
   due_at: null,
@@ -334,6 +353,7 @@ const isSubmitting = ref(false);
 // Options data
 const suppliers = ref([]);
 const customers = ref([]);
+const orders = ref([]);
 const costCenters = ref([]);
 
 // Operation options
@@ -351,18 +371,20 @@ const paymentMethodOptions = ref([
   { label: 'Débito', value: 'debit' }
 ]);
 
-// Load suppliers, customers and cost centers
+// Load suppliers, customers, orders and cost centers
 const loadFormData = async () => {
   isLoadingData.value = true;
   try {
-    const [suppliersResponse, customersResponse, costCentersResponse] = await Promise.all([
+    const [suppliersResponse, customersResponse, ordersResponse, costCentersResponse] = await Promise.all([
       axios.get('/api/suppliers'),
       axios.get('/api/customers'),
+      axios.get('/api/orders'),
       axios.get('/api/cost-centers')
     ]);
     
     suppliers.value = suppliersResponse.data.data || suppliersResponse.data;
     customers.value = customersResponse.data.data || customersResponse.data;
+    orders.value = ordersResponse.data.data || ordersResponse.data;
     costCenters.value = costCentersResponse.data.data || costCentersResponse.data;
   } catch (error) {
     console.error('Error loading form data:', error);
@@ -465,9 +487,9 @@ const handleSubmit = async () => {
       life: 3000
     });
 
-    // Redirect to edit page if creating new entry
-    if (!isEditMode.value && response.data?.id) {
-      router.push({ name: 'entries.edit', params: { id: response.data.id } });
+    // Redirect to entries listing after creating new entry
+    if (!isEditMode.value) {
+      router.push({ name: 'entries.index' });
     }
 
   } catch (error) {
@@ -549,14 +571,14 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-// Watch for operation changes to clear supplier/customer fields
+// Watch for operation changes to clear supplier/order fields
 watch(() => formData.operation, (newOperation) => {
   if (newOperation === 1) {
     // Entrada - clear supplier
     formData.supplier_id = null;
   } else if (newOperation === 2) {
-    // Saída - clear customer
-    formData.customer_id = null;
+    // Saída - clear order
+    formData.order_id = null;
   }
 });
 

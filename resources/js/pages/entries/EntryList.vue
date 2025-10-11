@@ -43,11 +43,17 @@
             <Column field="supplier" header="Fornecedor">
                 <template #body="slotProps">
                     <div class="flex gap-3 items-center">
-                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <i class="pi pi-building text-gray-400 text-sm"></i>
-                        </div>
                         <div>
-                            <div class="font-medium">{{ slotProps.data.supplier?.name || 'N/A' }}</div>
+                            <div class="font-medium">{{ slotProps.data.supplier?.name }}</div>
+                        </div>
+                    </div>
+                </template>
+            </Column>
+            <Column field="customer" header="Cliente">
+                <template #body="slotProps">
+                    <div class="flex gap-3 items-center">
+                        <div>
+                            <div class="font-medium">{{ slotProps.data.order?.customer?.name }}</div>
                         </div>
                     </div>
                 </template>
@@ -59,12 +65,6 @@
                 </template>
             </Column>
             
-            <Column field="payment_method" header="Método de Pagamento">
-                <template #body="slotProps">
-                    <Tag :value="getPaymentMethodLabel(slotProps.data.payment_method)" 
-                         severity="info" />
-                </template>
-            </Column>
             
             <Column field="due_at" header="Vencimento">
                 <template #body="slotProps">
