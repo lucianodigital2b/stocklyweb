@@ -6,19 +6,30 @@
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span class="text-xl font-bold">Lançamentos Financeiros</span>
 
-                    <div class="flex gap-3">
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="searchQuery" @input="onSearch" placeholder="Procurar" />
-                        </IconField>
+                    <div class="flex gap-3 flex-wrap">
+                        
+                        <DatePicker 
+                            v-model="dateFilter" 
+                            @update:modelValue="onDateFilter"
+                            placeholder="Filtrar por data de criação"
+                            dateFormat="dd/mm/yy"
+                            showIcon
+                            class="w-60"
+                        />
+                        
+                        <Dropdown 
+                            v-model="typeFilter" 
+                            @update:modelValue="onTypeFilter"
+                            :options="operationOptions" 
+                            optionLabel="label" 
+                            optionValue="value"
+                            placeholder="Filtrar por tipo"
+                            class="w-48"
+                        />
+                        
                         <Button @click="$router.push({ name: 'entries.create'})">Novo lançamento</Button>
-
                     </div>
-
                 </div>
-                
             </template>
             
             <Column field="value" header="Valor">
@@ -117,6 +128,8 @@
 import { ref, onMounted } from 'vue';
 import Button from "primevue/button";
 import Tag from "primevue/tag";
+import DatePicker from "primevue/datepicker";
+import Dropdown from "primevue/dropdown";
 import { useToast } from 'primevue/usetoast';
 import axios from '../../plugins/axios';
 
@@ -128,6 +141,15 @@ const loading = ref(false);
 const totalRecords = ref(0);
 const perPage = ref(10);
 const searchQuery = ref('');
+const dateFilter = ref(null);
+const typeFilter = ref(null);
+
+// Operation type options
+const operationOptions = [
+    { label: 'Todos', value: null },
+    { label: 'Entrada', value: 1 },
+    { label: 'Saída', value: 2 }
+];
 
 // Pagination and filtering
 const onPage = (event) => {
@@ -139,18 +161,38 @@ const onFilter = (event) => {
 };
 
 const onSearch = () => {
-    loadEntries(1, perPage.value, null, searchQuery.value);
+    loadEntries();
+};
+
+const onDateFilter = () => {
+    loadEntries();
+};
+
+const onTypeFilter = () => {
+    loadEntries();
 };
 
 // Load entries from API
-const loadEntries = async (page = 1, rows = 10, filters = null, search = '') => {
+const loadEntries = async (page = 1, rows = 10, filters = null) => {
     loading.value = true;
     try {
         const params = {
             page,
             per_page: rows,
-            search
+            search: searchQuery.value
         };
+
+        // Add date filter
+        if (dateFilter.value) {
+            const date = new Date(dateFilter.value);
+            const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+            params.created_at = formattedDate;
+        }
+
+        // Add type filter
+        if (typeFilter.value !== null) {
+            params.operation = typeFilter.value;
+        }
 
         if (filters) {
             Object.keys(filters).forEach(key => {

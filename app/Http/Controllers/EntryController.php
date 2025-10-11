@@ -34,6 +34,10 @@ class EntryController extends Controller
             $args['q'] = $request->input('q');
         }
 
+        if(!empty($request->input('search'))){
+            $args['q'] = $request->input('search');
+        }
+
         if($request->has('operation')){
             $args['operation'] = $request->input('operation');
         }
@@ -45,6 +49,10 @@ class EntryController extends Controller
         if($request->has('due_at_from')){
             $args['due_at_from'] = $request->input('due_at_from');
             $args['due_at_to'] = $request->input('due_at_to', $request->input('due_at_from'));
+        }
+
+        if($request->has('created_at')){
+            $args['created_at'] = $request->input('created_at');
         }
 
         $entries = $this->entryService->list($args);

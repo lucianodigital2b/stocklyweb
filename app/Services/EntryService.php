@@ -25,16 +25,28 @@ class EntryService
                 }
             }
 
-            if (isset($data['s']) && ! empty($data['s'])) {
+            // Handle search parameter (both 's' and 'q' for compatibility)
+            $searchTerm = $data['s'] ?? $data['q'] ?? null;
+            if (!empty($searchTerm)) {
                 $searchbleFields = ['observations', 'external_code', 'account', 'barcode'];
 
                 foreach ($searchbleFields as $i => $searchbleField) {
                     if ($i > 0) {
-                        $entries = $entries->orWhere($searchbleField, 'LIKE', '%'.$data['s'].'%');
+                        $entries = $entries->orWhere($searchbleField, 'LIKE', '%'.$searchTerm.'%');
                     } else {
-                        $entries = $entries->where($searchbleField, 'LIKE', '%'.$data['s'].'%');
+                        $entries = $entries->where($searchbleField, 'LIKE', '%'.$searchTerm.'%');
                     }
                 }
+            }
+
+            // Handle created_at date filtering
+            if (isset($data['created_at']) && !empty($data['created_at'])) {
+                $entries = $entries->whereDate('created_at', $data['created_at']);
+            }
+
+            // Handle operation type filtering
+            if (isset($data['operation']) && $data['operation'] !== null) {
+                $entries = $entries->where('operation', $data['operation']);
             }
 
             if (isset($data['orderBy']) && isset($data['order'])) {
@@ -180,7 +192,6 @@ class EntryService
             'account' => 'nullable|string|max:255',
             'barcode' => 'nullable|string|max:255',
             'observations' => 'nullable|string|max:1000',
-            'payment_info' => 'nullable|string|max:500',
         ];
 
         $validator = validator($data, $rules);

@@ -29,6 +29,7 @@
                     placeholder="R$0,00"
                     class="w-full"
                     :class="{ 'p-invalid': errors.value }"
+                    :disabled="isPaid"
                   />
                   <small v-if="errors.value" class="p-error text-red-600">{{ errors.value }}</small>
                 </div>
@@ -45,6 +46,7 @@
                     optionValue="value"
                     class="w-full"
                     :class="{ 'p-invalid': errors.operation }"
+                    :disabled="isPaid"
                   />
                   <small v-if="errors.operation" class="p-error text-red-600">{{ errors.operation }}</small>
                 </div>
@@ -67,6 +69,7 @@
                     class="w-full"
                     filter
                     showClear
+                    :disabled="isPaid"
                   >
                     <template #value="slotProps">
                       <div v-if="slotProps.value" class="flex align-items-center">
@@ -99,6 +102,7 @@
                     class="w-full"
                     filter
                     showClear
+                    :disabled="isPaid"
                   />
                 </div>
 
@@ -163,6 +167,7 @@
                     placeholder="Selecione a data de pagamento"
                     class="w-full"
                     showIcon
+                    :disabled="isPaid"
                   />
                 </div>
 
@@ -222,21 +227,7 @@
                   <small class="text-color-secondary">Caracteres: {{ (formData.observations || '').length }}/1000</small>
                 </div>
 
-                <!-- Payment Info -->
-                <div class="field mb-4">
-                  <Label for="payment_info">
-                    Informações de Pagamento
-                  </Label>
-                  <Textarea 
-                    id="payment_info" 
-                    v-model="formData.payment_info" 
-                    rows="3"
-                    class="w-full"
-                    placeholder="Informações adicionais sobre o pagamento..."
-                    :maxlength="500"
-                  />
-                  <small class="text-color-secondary">Caracteres: {{ (formData.payment_info || '').length }}/500</small>
-                </div>
+              
 
               </template>
             </Card>
@@ -561,6 +552,10 @@ const entryStatusSeverity = computed(() => {
   }
   
   return 'info';
+});
+
+const isPaid = computed(() => {
+  return !!formData.paid_at;
 });
 
 // Helper functions
