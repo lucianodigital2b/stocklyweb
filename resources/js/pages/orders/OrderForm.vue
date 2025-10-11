@@ -284,22 +284,6 @@
           </template>
         </Card>
 
-        <!-- Tags -->
-        <Card>
-          <template #title>
-            <div class="flex items-center justify-between">
-              <span>Tags</span>
-              <Button icon="pi pi-pencil" text size="small" />
-            </div>
-          </template>
-          <template #content>
-            <InputText
-              v-model="orderTags"
-              placeholder="Adicionar tags"
-              class="w-full"
-            />
-          </template>
-        </Card>
 
         <!-- Order History -->
         <Card v-if="isEditMode">
