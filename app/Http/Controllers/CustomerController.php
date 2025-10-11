@@ -79,7 +79,7 @@ class CustomerController extends Controller
      * @param int $id
      * @return JsonResponse
      */
-    public function update(UpdateCustomerRequest $request, int $id): JsonResponse
+    public function update(StoreCustomerRequest $request, int $id): JsonResponse
     {
         $customer = $this->customerService->updateCustomer($id, $request->validated(), $request->input('meta', []));
         return response()->json([

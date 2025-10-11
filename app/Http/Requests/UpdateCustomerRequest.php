@@ -14,13 +14,12 @@ class UpdateCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'store_id' => 'sometimes|integer|exists:stores,id',
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:customers,email,' . $this->route('customer'),
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:customers,email',
             'phone' => 'nullable|string|max:20',
             'meta' => 'nullable|array',
-            'meta.*.key' => 'required|string',
-            'meta.*.value' => 'required|string',
+            'meta.*.key' => 'nullable|string',
+            'meta.*.value' => 'nullable|string',
         ];
     }
 }

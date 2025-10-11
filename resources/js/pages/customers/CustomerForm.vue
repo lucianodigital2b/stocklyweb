@@ -659,9 +659,9 @@ const handleSubmit = async () => {
       life: 3000
     });
 
-    // Redirect to edit page if creating new customer
-    if (!isEditMode.value && response.data?.id) {
-      router.push({ name: 'customers.edit', params: { id: response.data.id } });
+    // Redirect to customers listing if creating new customer
+    if (!isEditMode.value) {
+      router.push({ name: 'customers.index' });
     }
 
   } catch (error) {

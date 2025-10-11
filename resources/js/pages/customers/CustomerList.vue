@@ -23,9 +23,6 @@
             <Column field="name" header="Nome">
                 <template #body="slotProps">
                     <div class="flex gap-3 items-center">
-                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                            <i class="pi pi-user text-gray-400"></i>
-                        </div>
                         <div>
                             <div class="font-semibold">{{ slotProps.data.name }}</div>
                             <div class="text-sm text-gray-500">{{ slotProps.data.email }}</div>
@@ -63,13 +60,6 @@
                 </template>
             </Column>
             
-            <Column field="store" header="Loja">
-                <template #body="slotProps">
-                    <div class="max-w-xs truncate">
-                        {{ slotProps.data.store?.name || 'Não informado' }}
-                    </div>
-                </template>
-            </Column>
             <Column header="Ações">
                 <template #body="slotProps">
                     <div class="flex gap-2">
