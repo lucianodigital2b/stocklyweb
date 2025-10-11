@@ -28,23 +28,10 @@
       <div class="col-12 md:col-7">
         <div class="space-y-6">
 
-        <!-- Order Status -->
-        <Card>
-          <template #title>Status do Pedido</template>
-          <template #content>
-            <Dropdown
-              v-model="orderStatus"
-              :options="statusOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecionar status"
-              class="w-full"
-            />
-          </template>
-        </Card>
+
 
         <!-- Products Section -->
-        <Card class="products-section">
+        <Card class="products-section" ref="productsCard">
           <template #title>
             <div class="flex items-center justify-between">
               <span>Produtos</span>
@@ -213,6 +200,22 @@
       <div class="col-12 md:col-4">
         <div class="space-y-6">
         <!-- Notes -->
+
+                <!-- Order Status -->
+        <Card>
+          <template #title>Status do Pedido</template>
+          <template #content>
+            <Dropdown
+              v-model="orderStatus"
+              :options="statusOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecionar status"
+              class="w-full"
+            />
+          </template>
+        </Card>
+
         <Card>
           <template #title>
             <div class="flex items-center justify-between">
@@ -276,32 +279,6 @@
                 </div>
               </div>
             </div>
-          </template>
-        </Card>
-
-        <!-- Market -->
-        <Card>
-          <template #title>Mercados</template>
-          <template #content>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-globe"></i>
-              <span>Brasil</span>
-            </div>
-          </template>
-        </Card>
-
-        <!-- Currency -->
-        <Card>
-          <template #title>Moeda</template>
-          <template #content>
-            <Dropdown
-              v-model="selectedCurrency"
-              :options="currencies"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Real Brasileiro (BRL R$)"
-              class="w-full"
-            />
           </template>
         </Card>
 
@@ -579,6 +556,15 @@ const addProduct = async (product) => {
       );
     }
   } else {
+    // Animate card height before adding item
+    if (productsCard.value && orderItems.value.length === 0) {
+      gsap.to(productsCard.value.$el, {
+        height: 'auto',
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    }
+    
     orderItems.value.push({
       product: product,
       quantity: 1,
@@ -594,6 +580,15 @@ const addProduct = async (product) => {
         { opacity: 0, y: -20, scale: 0.9 },
         { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.7)" }
       );
+    }
+    
+    // Animate card height expansion for subsequent items
+    if (productsCard.value && orderItems.value.length > 1) {
+      gsap.to(productsCard.value.$el, {
+        height: 'auto',
+        duration: 0.3,
+        ease: "power2.out"
+      });
     }
   }
   
@@ -625,6 +620,16 @@ const removeProduct = async (index) => {
       );
     }
   });
+  
+  // Animate card height contraction after item removal
+  await nextTick();
+  if (productsCard.value) {
+    gsap.to(productsCard.value.$el, {
+      height: 'auto',
+      duration: 0.3,
+      ease: "power2.out"
+    });
+  }
 };
 
 const updateItemTotal = (index) => {
@@ -691,14 +696,16 @@ const addHistoryEntry = async () => {
     toast.add({
        severity: 'success',
        summary: 'Sucesso',
-       detail: 'Entrada de histórico adicionada com sucesso'
+       detail: 'Entrada de histórico adicionada com sucesso',
+       life: 3000
      });
    } catch (error) {
      toast.add({
-       severity: 'error',
-       summary: 'Erro',
-       detail: 'Falha ao adicionar entrada de histórico'
-     });
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Falha ao adicionar entrada de histórico',
+        life: 3000
+      });
   }
 };
 
@@ -736,7 +743,8 @@ const saveOrder = async () => {
     toast.add({
        severity: 'success',
        summary: 'Sucesso',
-       detail: `Pedido ${isEditMode.value ? 'atualizado' : 'criado'} com sucesso`
+       detail: `Pedido ${isEditMode.value ? 'atualizado' : 'criado'} com sucesso`,
+       life: 3000
      });
 
      router.push('/orders');
@@ -790,10 +798,11 @@ const loadOrder = async () => {
     orderHistory.value = historyResponse.data.data;
   } catch (error) {
      toast.add({
-       severity: 'error',
-       summary: 'Erro',
-       detail: 'Falha ao carregar pedido'
-     });
+         severity: 'error',
+         summary: 'Erro',
+         detail: 'Falha ao carregar pedido',
+         life: 3000
+       });
   }
 };
 
@@ -803,6 +812,7 @@ onMounted(() => {
 
 // GSAP refs for animations
 const orderItemRefs = ref([]);
+const productsCard = ref(null);
 </script>
 
 <style scoped>

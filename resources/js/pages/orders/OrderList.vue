@@ -1,30 +1,25 @@
 <template>
-  <div class="order-list-container">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Pedidos</h1>
-        <p class="text-sm text-gray-600 mt-1">Gerencie seus pedidos e acompanhe seus status</p>
-      </div>
-      <Button 
-        label="Criar pedido" 
-        icon="pi pi-plus"
-        @click="$router.push('/orders/create')"
-      />
-    </div>
+    <div class="card">
+        <DataTable v-model:filters="filters" v-model:selection="selectedOrders" :value="orders" paginator :rows="perPage" dataKey="id" filterDisplay="menu"
+            :globalFilterFields="['id', 'customer.name', 'customer.email']" :loading="loading" :totalRecords="totalRecords" :lazy="true" @page="onPage" @filter="onFilter">
+            <template #header>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xl font-bold">Pedidos</span>
 
-    <Card>
-      <template #content>
-        <DataTable 
-          :value="orders" 
-          :loading="loading"
-          paginator 
-          :rows="10"
-          :totalRecords="totalRecords"
-          lazy
-          @page="onPage"
-          dataKey="id"
-          class="p-datatable-sm"
-        >
+                    <div class="flex gap-3">
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="searchQuery" @input="onSearch" placeholder="Procurar" />
+                        </IconField>
+                        <Button @click="$router.push('/orders/create')">Novo pedido</Button>
+
+                    </div>
+
+                </div>
+                
+            </template>
           <Column field="status" header="Status" sortable>
             <template #body="{ data }">
               <Tag 
@@ -68,32 +63,28 @@
               <div class="flex gap-2">
                 <Button 
                   icon="pi pi-eye" 
-                  severity="secondary" 
-                  text 
-                  size="small"
+                  size="small" 
+                  severity="secondary"
                   @click="viewOrder(data.id)"
                 />
                 <Button 
                   icon="pi pi-pencil" 
-                  severity="secondary" 
-                  text 
-                  size="small"
+                  size="small" 
+                  severity="secondary"
                   @click="editOrder(data.id)"
                 />
                 <Button 
                   icon="pi pi-trash" 
-                  severity="danger" 
-                  text 
-                  size="small"
+                  size="small" 
+                  severity="danger"
                   @click="deleteOrder(data.id)"
                 />
               </div>
             </template>
           </Column>
+          <template #footer> {{ totalRecords }} pedidos encontrados. </template>
         </DataTable>
-      </template>
-    </Card>
-  </div>
+    </div>
 </template>
 
 <script setup>
@@ -103,7 +94,6 @@ import { useToast } from 'primevue/usetoast';
 import axios from '../../plugins/axios';
 
 // Components
-import Card from 'primevue/card';
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -113,26 +103,44 @@ const router = useRouter();
 const toast = useToast();
 
 // Reactive data
+const selectedOrders = ref();
+const filters = ref();
 const orders = ref([]);
 const loading = ref(false);
 const totalRecords = ref(0);
+const perPage = ref(10);
+const currentPage = ref(1);
+const searchQuery = ref('');
+let searchTimeout = null;
 
 // Methods
-const loadOrders = async (page = 1) => {
+const loadOrders = async (page = 1, search = '') => {
   loading.value = true;
   
   try {
-    const { data } = await axios.get('/api/orders', {
-      params: { page, per_page: 10 }
-    });
+    const params = {
+      page: page,
+      per_page: perPage.value
+    };
+    
+    if (search) {
+      params.q = search;
+    }
+    
+    const { data } = await axios.get('/api/orders', { params });
     
     orders.value = data.data || [];
     totalRecords.value = data.total || 0;
+    currentPage.value = data.current_page || page;
   } catch (error) {
+    console.error('Error loading orders:', error);
+    orders.value = [];
+    totalRecords.value = 0;
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: 'Falha ao carregar pedidos'
+      detail: 'Falha ao carregar pedidos',
+      life: 3000
     });
   } finally {
     loading.value = false;
@@ -140,7 +148,26 @@ const loadOrders = async (page = 1) => {
 };
 
 const onPage = (event) => {
-  loadOrders(event.page + 1);
+  const page = event.page + 1; // PrimeVue uses 0-based indexing
+  currentPage.value = page;
+  loadOrders(page, searchQuery.value);
+};
+
+const onSearch = () => {
+  // Debounce search to avoid too many API calls
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    loadOrders(1, searchQuery.value);
+  }, 500);
+};
+
+const onFilter = () => {
+  // Handle filtering if needed
+  loadOrders(1, searchQuery.value);
 };
 
 const viewOrder = (id) => {
@@ -160,15 +187,20 @@ const deleteOrder = async (id) => {
     toast.add({
       severity: 'success',
       summary: 'Sucesso',
-      detail: 'Pedido excluído com sucesso'
+      detail: 'Pedido excluído com sucesso',
+      life: 3000
     });
     
-    loadOrders();
+    // Reload orders after deletion
+    loadOrders(currentPage.value, searchQuery.value);
   } catch (error) {
+    console.error('Error deleting order:', error);
+    
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: 'Falha ao excluir pedido'
+      detail: error.response?.data?.message || 'Falha ao excluir pedido. Tente novamente.',
+      life: 5000
     });
   }
 };
@@ -218,29 +250,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.order-list-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-:deep(.p-card) {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-}
-
-:deep(.p-datatable .p-datatable-thead > tr > th) {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
-  font-weight: 600;
-  color: #374151;
-}
-
-:deep(.p-datatable .p-datatable-tbody > tr > td) {
-  border-color: #e5e7eb;
-}
-
-:deep(.p-datatable .p-datatable-tbody > tr:hover) {
-  background-color: #f9fafb;
-}
 </style>

@@ -53,7 +53,7 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request): JsonResponse
     {
-        $order = $this->orderService->createOrder($request->validated(), $request->input('meta', []));
+        $order = $this->orderService->createOrder($request->validated());
         return response()->json([
             'data' => new OrderResource($order),
         ], 201);
@@ -80,7 +80,7 @@ class OrderController extends Controller
      * @param int $id
      * @return JsonResponse
      */
-    public function update(UpdateOrderRequest $request, int $id): JsonResponse
+    public function update(StoreOrderRequest $request, int $id): JsonResponse
     {
         $order = $this->orderService->updateOrder($id, $request->validated(), $request->input('meta', []));
         return response()->json([

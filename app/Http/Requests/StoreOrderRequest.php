@@ -15,11 +15,14 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'customer_id' => 'required|integer|exists:customers,id',
-            'total_amount' => 'required|numeric',
             'status' => 'required|string|max:50',
-            'meta' => 'nullable|array',
-            'meta.*.key' => 'required|string',
-            'meta.*.value' => 'required|string',
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'required|numeric',
+            // 'meta' => 'nullable|array',
+            // 'meta.*.key' => 'required|string',
+            // 'meta.*.value' => 'required|string',
         ];
     }
 }
