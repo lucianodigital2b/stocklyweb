@@ -12,16 +12,13 @@ class StockMovement extends Model
 
     protected $fillable = [
         'movement_type', 
-        'reference_id',
-        'author',
+        'user_id',
         'stock_before', 
         'stock_after',
         'is_infinite_before',
         'is_infinite_after',
-        'inventory_id'
+        'inventory_id',
     ];
-
-
 
 
     public function product()

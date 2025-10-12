@@ -11,7 +11,7 @@ class UpdateInventoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,26 @@ class UpdateInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            // 'warehouse_id' => 'sometimes|integer|exists:warehouses,id',
+            'product_id' => 'sometimes|integer|exists:products,id',
+            'stock' => 'sometimes|integer|min:0',
+            'is_infinite' => 'sometimes|boolean',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'warehouse_id.exists' => 'O depósito selecionado não existe.',
+            'product_id.exists' => 'O produto selecionado não existe.',
+            'stock.integer' => 'O estoque deve ser um número inteiro.',
+            'stock.min' => 'O estoque não pode ser negativo.',
+            'is_infinite.boolean' => 'O campo estoque infinito deve ser verdadeiro ou falso.',
         ];
     }
 }

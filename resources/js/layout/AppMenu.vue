@@ -99,6 +99,12 @@ const model = ref([
                     },
                 ]
             },
+            
+            {
+                label: 'Inventário',
+                icon: 'pi pi-fw pi-building',
+                to: '/inventories'
+            },
             {
                 label: 'Cupons',
                 icon: 'pi pi-fw pi-users',
@@ -109,20 +115,20 @@ const model = ref([
                 icon: 'pi pi-fw pi-users',
                 soon: true,
 
-                // items: [
-                //     {
-                //         label: 'Políticas de Envio',
-                //         to: '/deliveries'
-                //     },
-                //     {
-                //         label: 'Métodos de Envio',
-                //         to: '/shipping-methods'
-                //     },
-                //     {
-                //         label: 'Inventário',
-                //         to: '/inventories'
-                //     },
-                // ]
+                items: [
+                    {
+                        label: 'Políticas de Envio',
+                        to: '/deliveries'
+                    },
+                    // {
+                    //     label: 'Métodos de Envio',
+                    //     to: '/shipping-methods'
+                    // },
+                    {
+                        label: 'Inventário',
+                        to: '/inventories'
+                    },
+                ]
             },
         ]
     },

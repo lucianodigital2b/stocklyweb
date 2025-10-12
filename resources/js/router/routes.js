@@ -149,6 +149,44 @@ export default [
   },
 
   {
+    path: '/warehouses',
+    name: 'warehouses.index',
+    component: () => import('../pages/warehouses/WarehouseList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/warehouses/create',
+    name: 'warehouses.create',
+    component: () => import('../pages/warehouses/WarehouseForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/warehouses/:id/edit',
+    name: 'warehouses.edit',
+    component: () => import('../pages/warehouses/WarehouseForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
+    path: '/inventories',
+    name: 'inventories.index',
+    component: () => import('../pages/inventories/InventoryList.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/inventories/create',
+    name: 'inventories.create',
+    component: () => import('../pages/inventories/InventoryForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+  {
+    path: '/inventories/:id/edit',
+    name: 'inventories.edit',
+    component: () => import('../pages/inventories/InventoryForm.vue'),
+    meta: { layout: 'AppLayout' }
+  },
+
+  {
     path: '/settings',
     component: page('settings/index'),
     children: [

@@ -54,11 +54,29 @@ return new class extends Migration
         });
 
         // Add company_id to warehouses table
-        // Schema::table('warehouses', function (Blueprint $table) {
-        //     $table->unsignedBigInteger('company_id')->nullable()->after('id');
-        //     $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
-        //     $table->index('company_id');
-        // });
+        Schema::table('warehouses', function (Blueprint $table) {
+            $table->unsignedBigInteger('company_id')->nullable()->after('id');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->index('company_id');
+        });
+
+        Schema::table('docks', function (Blueprint $table) {
+            $table->unsignedBigInteger('company_id')->nullable()->after('id');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->index('company_id');
+        });
+
+        Schema::table('shipping_policies', function (Blueprint $table) {
+            $table->unsignedBigInteger('company_id')->nullable()->after('id');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->index('company_id');
+        });
+
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->unsignedBigInteger('company_id')->nullable()->after('id');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->index('company_id');
+        });
     }
 
     /**

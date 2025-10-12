@@ -9,105 +9,129 @@ use App\Exceptions\InsufficientStockException;
 class StockService
 {
     /**
-     * Deduct stock for a product or product variant and record the movement.
+     * Deduct stock for a product and record the movement.
      *
-     * @param int|null $productId
-     * @param int|null $variantId
+     * @param int $productId
      * @param int $quantity
      * @param string $movementType
      * @param int|null $referenceId
      * @throws InsufficientStockException
      */
-    public function deductStock(?int $productId, ?int $variantId, int $quantity, string $movementType = 'order', ?int $referenceId = null): void
+    public function deductStock(int $productId, int $quantity, string $movementType = 'order', ?int $referenceId = null): void
     {
-        // Ensure either productId or variantId is provided
-        if (!$productId && !$variantId) {
-            throw new \InvalidArgumentException('Either productId or variantId must be provided.');
-        }
-
         // Find the inventory record
-        $inventory = $this->findInventory($productId, $variantId);
+        $inventory = $this->findInventory($productId);
 
         if (!$inventory) {
-            $id = $variantId ?? $productId;
-            throw new InsufficientStockException("Inventory not found for ID: $id", $id);
+            throw new InsufficientStockException("Inventory not found for product ID: $productId", $productId);
         }
 
-        if ($inventory->quantity < $quantity) {
-            $id = $variantId ?? $productId;
-            throw new InsufficientStockException("Insufficient stock for ID: $id", $id);
+        if (!$inventory->is_infinite && $inventory->stock < $quantity) {
+            throw new InsufficientStockException("Insufficient stock for product ID: $productId", $productId);
         }
 
-        // Deduct the stock
-        $inventory->quantity -= $quantity;
-        $inventory->save();
+        // Store the stock before the change
+        $stockBefore = $inventory->stock;
+        $isInfiniteBefore = $inventory->is_infinite;
+
+        // Deduct the stock (only if not infinite)
+        if (!$inventory->is_infinite) {
+            $inventory->stock -= $quantity;
+            $inventory->save();
+        }
 
         // Record the stock movement
-        $this->recordStockMovement($productId, $variantId, -$quantity, $movementType, $referenceId);
+        $this->recordStockMovement(
+            $inventory->id,
+            -$quantity,
+            $movementType,
+            $stockBefore,
+            $inventory->stock,
+            $isInfiniteBefore,
+            $inventory->is_infinite,
+            $referenceId
+        );
     }
 
     /**
-     * Restore stock for a product or product variant and record the movement.
+     * Restore stock for a product and record the movement.
      *
-     * @param int|null $productId
-     * @param int|null $variantId
+     * @param int $productId
      * @param int $quantity
      * @param string $movementType
      * @param int|null $referenceId
      */
-    public function restoreStock(?int $productId, ?int $variantId, int $quantity, string $movementType = 'order_cancellation', ?int $referenceId = null): void
+    public function restoreStock(int $productId, int $quantity, string $movementType = 'order_cancellation', ?int $referenceId = null): void
     {
-        // Ensure either productId or variantId is provided
-        if (!$productId && !$variantId) {
-            throw new \InvalidArgumentException('Either productId or variantId must be provided.');
-        }
-
         // Find the inventory record
-        $inventory = $this->findInventory($productId, $variantId);
+        $inventory = $this->findInventory($productId);
 
         if ($inventory) {
-            // Restore the stock
-            $inventory->quantity += $quantity;
-            $inventory->save();
+            // Store the stock before the change
+            $stockBefore = $inventory->stock;
+            $isInfiniteBefore = $inventory->is_infinite;
+
+            // Restore the stock (only if not infinite)
+            if (!$inventory->is_infinite) {
+                $inventory->stock += $quantity;
+                $inventory->save();
+            }
 
             // Record the stock movement
-            $this->recordStockMovement($productId, $variantId, $quantity, $movementType, $referenceId);
+            $this->recordStockMovement(
+                $inventory->id,
+                $quantity,
+                $movementType,
+                $stockBefore,
+                $inventory->stock,
+                $isInfiniteBefore,
+                $inventory->is_infinite,
+                $referenceId
+            );
         }
     }
 
     /**
-     * Record a stock movement for a product or product variant.
+     * Record a stock movement for a product.
      *
-     * @param int|null $productId
-     * @param int|null $variantId
+     * @param int $inventoryId
      * @param int $quantityChange
      * @param string $movementType
+     * @param int $stockBefore
+     * @param int $stockAfter
+     * @param bool $isInfiniteBefore
+     * @param bool $isInfiniteAfter
      * @param int|null $referenceId
      */
-    protected function recordStockMovement(?int $productId, ?int $variantId, int $quantityChange, string $movementType, ?int $referenceId = null): void
-    {
+    protected function recordStockMovement(
+        int $inventoryId,
+        int $quantityChange,
+        string $movementType,
+        int $stockBefore,
+        int $stockAfter,
+        bool $isInfiniteBefore,
+        bool $isInfiniteAfter,
+        ?int $referenceId = null
+    ): void {
         StockMovement::create([
-            'product_id' => $productId,
-            'variant_id' => $variantId,
-            'quantity_change' => $quantityChange,
+            'inventory_id' => $inventoryId,
             'movement_type' => $movementType,
-            'reference_id' => $referenceId,
+            'stock_before' => $stockBefore,
+            'stock_after' => $stockAfter,
+            'is_infinite_before' => $isInfiniteBefore,
+            'is_infinite_after' => $isInfiniteAfter,
+            'user_id' => auth()->id() ?? 1, // Default to user ID 1 if no authenticated user
         ]);
     }
 
     /**
-     * Find the inventory record for a product or product variant.
+     * Find the inventory record for a product.
      *
-     * @param int|null $productId
-     * @param int|null $variantId
+     * @param int $productId
      * @return Inventory|null
      */
-    protected function findInventory(?int $productId, ?int $variantId): ?Inventory
+    protected function findInventory(int $productId): ?Inventory
     {
-        if ($variantId) {
-            return Inventory::where('product_variant_id', $variantId)->first();
-        }
-
         return Inventory::where('product_id', $productId)->first();
     }
 }

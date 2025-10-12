@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity_change');
+            $table->foreignId('inventory_id')->constrained()->onDelete('cascade');
             $table->string('movement_type');
-            $table->foreignId('reference_id')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->integer('stock_before');
+            $table->integer('stock_after');
+            $table->boolean('is_infinite_before');
+            $table->boolean('is_infinite_after');
             $table->timestamps();
+
         });
     }
 

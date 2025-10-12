@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('inventories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity');
-            $table->integer('reorder_threshold');
-            $table->integer('reorder_quantity');
+            $table->foreignId('warehouse_id')->constrained()->onDelete('cascade');
+            $table->integer('stock');
+            $table->integer('reorder_threshold')->nullable();
+            $table->integer('reorder_quantity')->nullable();
+            $table->boolean('is_infinite')->default(false);
             $table->timestamps();
         });
     }

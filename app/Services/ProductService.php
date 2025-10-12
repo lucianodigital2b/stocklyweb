@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\Warehouse;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -86,13 +89,6 @@ class ProductService
             // Create the product
             $product = Product::create($productData);
 
-            // Add variants if provided
-            if (!empty($variantsData)) {
-                foreach ($variantsData as $variantData) {
-                    $this->addVariant($product->id, $variantData);
-                }
-            }
-
             // Handle gallery uploads - first image becomes thumbnail, rest go to gallery
             $allImages = array_merge($existingGallery, $gallery);
             
@@ -109,6 +105,9 @@ class ProductService
                     }
                 }
             }
+
+            // Create inventory for the product in the default warehouse
+            $this->createInventoryForProduct($product);
 
             DB::commit();
 
@@ -250,5 +249,49 @@ class ProductService
         }
 
         return $query->paginate($perPage);
+    }
+
+    /**
+     * Create inventory for a product in the default warehouse.
+     *
+     * @param Product $product
+     * @return void
+     */
+    private function createInventoryForProduct(Product $product): void
+    {
+        // Get the default warehouse for the current company
+        $defaultWarehouse = Warehouse::where('company_id', auth()->user()->company_id)
+            ->first();
+
+        if ($defaultWarehouse) {
+            // Check if inventory already exists for this product-warehouse combination
+            $existingInventory = Inventory::where('product_id', $product->id)
+                                ->where('warehouse_id', $defaultWarehouse->id)
+                                ->first();
+
+            if (!$existingInventory) {
+                $initialStock = $product->stock ?? 0;
+                
+                $inventory = Inventory::create([
+                    'warehouse_id' => $defaultWarehouse->id,
+                    'product_id' => $product->id,
+                    'stock' => $initialStock,
+                    'is_infinite' => false,
+                ]);
+
+                // Record initial stock movement if there's initial stock
+                if ($initialStock > 0) {
+                    StockMovement::create([
+                        'inventory_id' => $inventory->id,
+                        'movement_type' => 'initial_stock',
+                        'stock_before' => 0,
+                        'stock_after' => $initialStock,
+                        'is_infinite_before' => false,
+                        'is_infinite_after' => false,
+                        'user_id' => auth()->id() ?? 1, // Default to user ID 1 if no authenticated user
+                    ]);
+                }
+            }
+        }
     }
 }

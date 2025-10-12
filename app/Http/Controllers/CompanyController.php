@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Store;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -59,6 +60,13 @@ class CompanyController extends Controller
             $user->company_id = $company->id;
             $user->save();
 
+            // Create a default warehouse for the company
+            $warehouse = Warehouse::create([
+                'name' => 'Depósito Principal',
+                'status' => 1,
+                'company_id' => $company->id,
+            ]);
+
             // Create a default store for the company
             $store = Store::create([
                 'name' => $company->name . ' Store',
@@ -67,9 +75,10 @@ class CompanyController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Company and store created successfully',
+                'message' => 'Company, warehouse and store created successfully',
                 'data' => [
                     'company' => $company,
+                    'warehouse' => $warehouse,
                     'store' => $store
                 ]
             ], 201);
@@ -106,7 +115,7 @@ class CompanyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
-            'document_number' => 'sometimes|required|string|max:255|unique:companies,document_number,' . $company->id,
+            // 'document_number' => 'sometimes|required|string|max:255|unique:companies,document_number,' . $company->id,
             'email' => 'sometimes|required|email|max:255|unique:companies,email,' . $company->id,
             'phone' => 'nullable|string|max:255',
             'address' => 'sometimes|required|string|max:500',

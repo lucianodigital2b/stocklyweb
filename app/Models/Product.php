@@ -34,6 +34,7 @@ class Product extends Model implements HasMedia
         'pair_id',
         'ean',
         'allow_backorders',
+        'store_id'
     ];
 
     const PRODUCT_TYPES = [

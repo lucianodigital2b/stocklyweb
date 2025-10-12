@@ -13,6 +13,8 @@ use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\EntryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\InventoryController;
 use App\Models\CostCenter;
 
 Route::get('/user', function (Request $request) {
@@ -31,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('cost-centers', CostCenterController::class);
     Route::apiResource('entries', EntryController::class);
+    Route::apiResource('warehouses', WarehouseController::class);
+    Route::apiResource('inventories', InventoryController::class);
 
     // Additional category routes
     Route::get('categories/tree', [CategoryController::class, 'tree']);
@@ -46,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Order history routes
     Route::post('orders/{order}/history', [OrderController::class, 'addHistory']);
     Route::get('orders/{order}/history', [OrderController::class, 'getHistory']);
+
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
     // Store management routes

@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\OrderMeta;
 use App\Models\Inventory;
 use App\Models\StockMovement;
+use App\Services\StockService;
 use App\Exceptions\InsufficientStockException;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
+    protected $stockService;
+
+    public function __construct(StockService $stockService)
+    {
+        $this->stockService = $stockService;
+    }
     /**
      * Create a new order.
      *
@@ -39,10 +46,12 @@ class OrderService
 
             // Add order items and deduct stock
             foreach ($order['items'] as $item) {
-                // Deduct stock for the product
-                $this->deductStock(
+                // Deduct stock for the product using StockService
+                $this->stockService->deductStock(
                     $item['product_id'],
-                    $item['quantity']
+                    $item['quantity'],
+                    'order',
+                    $order->id
                 );
 
                 // Create the order item
@@ -99,10 +108,12 @@ class OrderService
                     $orderItem = OrderItem::findOrFail($item['id']);
                     $orderItem->update($item);
                 } else {
-                    // Create new item and deduct stock
-                    $this->deductStock(
+                    // Create new item and deduct stock using StockService
+                    $this->stockService->deductStock(
                         $item['product_id'],
-                        $item['quantity']
+                        $item['quantity'],
+                        'order',
+                        $order->id
                     );
                     $order->items()->create($item);
                 }
@@ -139,11 +150,13 @@ class OrderService
             // Find the order
             $order = Order::findOrFail($orderId);
 
-            // Restore stock for each item
+            // Restore stock for each item using StockService
             foreach ($order->items as $item) {
-                $this->restoreStock(
+                $this->stockService->restoreStock(
                     $item->product_id,
-                    $item->quantity
+                    $item->quantity,
+                    'order_cancellation',
+                    $order->id
                 );
             }
 
@@ -205,66 +218,7 @@ class OrderService
         return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
-    /**
-     * Deduct stock for a product or variant.
-     *
-     * @param int|null $productId
-     * @param int|null $variantId
-     * @param int $quantity
-     * @throws InsufficientStockException
-     */
-    protected function deductStock(int $productId, int $quantity): void
-    {
-        // Find the inventory record
-        $inventory = $this->findInventory($productId);
 
-        if (!$inventory) {
-            throw new InsufficientStockException("Inventory not found for product ID: $productId", $productId);
-        }
-
-        if ($inventory->quantity < $quantity) {
-            throw new InsufficientStockException("Insufficient stock for product ID: $productId", $productId);
-        }
-
-        // Deduct the stock
-        $inventory->quantity -= $quantity;
-        $inventory->save();
-
-        // Record the stock movement
-        $this->recordStockMovement($productId, -$quantity, 'order');
-    }
-
-    /**
-     * Restore stock for a product.
-     *
-     * @param int $productId
-     * @param int $quantity
-     */
-    protected function restoreStock(int $productId, int $quantity): void
-    {
-        // Find the inventory record
-        $inventory = $this->findInventory($productId);
-
-        if ($inventory) {
-            // Restore the stock
-            $inventory->quantity += $quantity;
-            $inventory->save();
-
-            // Record the stock movement
-            $this->recordStockMovement($productId, $quantity, 'order_cancellation');
-        }
-    }
-
-    /**
-     * Find the inventory record for a product.
-     *
-     * @param int $productId
-     * @return Inventory|null
-     */
-    protected function findInventory(int $productId): ?Inventory
-    {
-        return Inventory::where('product_id', $productId)->first();
-    }
 
     /**
      * Calculate the total price from order items.
@@ -290,19 +244,5 @@ class OrderService
         return $total;
     }
 
-    /**
-     * Record a stock movement.
-     *
-     * @param int $productId
-     * @param int $quantityChange
-     * @param string $movementType
-     */
-    protected function recordStockMovement(int $productId, int $quantityChange, string $movementType): void
-    {
-        StockMovement::create([
-            'product_id' => $productId,
-            'quantity_change' => $quantityChange,
-            'movement_type' => $movementType,
-        ]);
-    }
+
 }
