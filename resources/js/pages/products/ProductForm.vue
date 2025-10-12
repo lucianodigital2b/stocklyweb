@@ -43,7 +43,7 @@
                     placeholder="Descrição do produto..."
                     :maxlength="500"
                   />
-                  <small class="text-color-secondary">Caracteres: {{ formData.description.length }}/500</small>
+                  <small class="text-color-secondary">Caracteres: {{ formData.description?.length }}/500</small>
                 </div>
 
                  <!-- Price -->
@@ -310,7 +310,7 @@ const formData = reactive({
 
 const errors = ref({});
 const isSubmitting = ref(false);
-const isLoadingCategories = ref(true);
+const isLoadingCategories = ref(false);
 const isLoadingProduct = ref(false);
 const categories = ref([]);
 const galleryImages = ref([]);
@@ -558,7 +558,7 @@ const handleSubmit = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  await loadCategories();
+  // await loadCategories();
   await loadProduct();
 });
 </script>
