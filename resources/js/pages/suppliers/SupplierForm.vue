@@ -161,13 +161,17 @@
                     <div class="col-4">
                       <div class="field mb-3">
                         <Label for="state">Estado</Label>
-                        <InputText 
+                        <Dropdown 
                           id="state"
                           v-model="formData.state" 
-                          placeholder="UF"
+                          :options="brazilianStates"
+                          optionLabel="nome"
+                          optionValue="sigla"
+                          placeholder="Selecione o estado"
                           class="w-full"
                           :class="{ 'p-invalid': errors.state }"
-                          maxlength="2"
+                          filter
+                          showClear
                         />
                         <small v-if="errors.state" class="p-error">{{ errors.state }}</small>
                       </div>
@@ -249,6 +253,7 @@ import { useAxios } from '@vueuse/integrations/useAxios';
 import { useToast } from 'primevue/usetoast';
 import { useRoute, useRouter } from 'vue-router';
 import { useViaCep } from '../../composables/useViaCep';
+import { brazilianStates } from '../../utils/brazilianStates';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
