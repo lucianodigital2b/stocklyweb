@@ -60,6 +60,13 @@
                             @click="$router.push({ name: 'inventories.edit', params: { id: slotProps.data.id } })"
                         />
                         <Button 
+                            icon="pi pi-history" 
+                            size="small" 
+                            severity="info"
+                            v-tooltip.top="'Ver histórico de movimentações'"
+                            @click="showStockHistory(slotProps.data.id)"
+                        />
+                        <Button 
                             icon="pi pi-trash" 
                             size="small" 
                             severity="danger"
@@ -70,6 +77,13 @@
             </Column>
             <template #footer> {{ totalRecords }} inventários encontrados. </template>
         </DataTable>
+
+        <!-- Stock Movement History Modal -->
+        <StockMovementModal 
+            :visible="stockHistoryModalVisible"
+            :inventory-id="selectedInventoryId"
+            @close="closeStockHistoryModal"
+        />
     </div>
 </template>
 
@@ -78,6 +92,7 @@ import { ref, onMounted } from 'vue';
 import Button from "primevue/button";
 import Tag from "primevue/tag";
 import { useToast } from 'primevue/usetoast';
+import StockMovementModal from '../../components/StockMovementModal.vue';
 import axios from '../../plugins/axios';
 
 const toast = useToast();
@@ -90,6 +105,10 @@ const perPage = ref(10);
 const currentPage = ref(1);
 const searchQuery = ref('');
 let searchTimeout = null;
+
+// Stock history modal state
+const stockHistoryModalVisible = ref(false);
+const selectedInventoryId = ref(null);
 
 onMounted(() => {
     loadInventories();
@@ -149,6 +168,16 @@ const getStockClass = (stock) => {
     if (stock === 0) return 'text-red-600';
     if (stock < 10) return 'text-orange-600';
     return 'text-green-600';
+};
+
+const showStockHistory = (inventoryId) => {
+    selectedInventoryId.value = inventoryId;
+    stockHistoryModalVisible.value = true;
+};
+
+const closeStockHistoryModal = () => {
+    stockHistoryModalVisible.value = false;
+    selectedInventoryId.value = null;
 };
 
 const deleteInventory = async (inventoryId) => {

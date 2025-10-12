@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockMovement;
+use App\Models\Inventory;
 use App\Http\Requests\StoreStockMovementRequest;
 use App\Http\Requests\UpdateStockMovementRequest;
 
@@ -14,6 +15,45 @@ class StockMovementController extends Controller
     public function index()
     {
         //
+    }
+
+    /**
+     * Get stock movements for a specific inventory
+     */
+    public function getByInventory($inventoryId)
+    {
+        $inventory = Inventory::with(['product', 'warehouse'])->findOrFail($inventoryId);
+        
+        $movements = StockMovement::with(['user'])
+            ->where('inventory_id', $inventoryId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($movement) {
+                return [
+                    'id' => $movement->id,
+                    'movement_type' => $movement->movement_type,
+                    'quantity_change' => $movement->quantity_change ?? 0,
+                    'stock_before' => $movement->stock_before,
+                    'stock_after' => $movement->stock_after,
+                    'is_infinite_before' => $movement->is_infinite_before,
+                    'is_infinite_after' => $movement->is_infinite_after,
+                    'user_name' => $movement->user ? $movement->user->name : 'Sistema',
+                    'created_at' => $movement->created_at->format('d/m/Y H:i:s'),
+                    'created_at_iso' => $movement->created_at->toISOString(),
+                ];
+            });
+
+        return response()->json([
+            'inventory' => [
+                'id' => $inventory->id,
+                'product_name' => $inventory->product->name,
+                'product_sku' => $inventory->product->sku,
+                'warehouse_name' => $inventory->warehouse->name,
+                'current_stock' => $inventory->stock,
+                'is_infinite' => $inventory->is_infinite,
+            ],
+            'movements' => $movements
+        ]);
     }
 
     /**

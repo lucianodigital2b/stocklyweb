@@ -18,8 +18,19 @@ class StockMovement extends Model
         'is_infinite_before',
         'is_infinite_after',
         'inventory_id',
+        'quantity_change',
     ];
 
+
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function product()
     {

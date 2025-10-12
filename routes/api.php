@@ -15,6 +15,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\StockMovementController;
 use App\Models\CostCenter;
 
 Route::get('/user', function (Request $request) {
@@ -35,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('entries', EntryController::class);
     Route::apiResource('warehouses', WarehouseController::class);
     Route::apiResource('inventories', InventoryController::class);
+
+    // Stock movement routes
+    Route::get('inventories/{inventory}/movements', [StockMovementController::class, 'getByInventory']);
 
     // Additional category routes
     Route::get('categories/tree', [CategoryController::class, 'tree']);
