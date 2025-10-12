@@ -242,13 +242,12 @@
               </div>
             </ToggleCard>
 
-             <ToggleCard 
+             <!-- <ToggleCard 
               title="Categorias"
               :toggleable="true"
               class="mb-4"
             >
               <div class="product-status-fields">
-                 <!-- Category -->
                 <div class="field mb-4">
                   <Label for="category">
                     Categoria
@@ -264,7 +263,7 @@
                   <small v-if="errors.category" class="p-error">{{ Array.isArray(errors.category) ? errors.category[0] : errors.category }}</small>
                 </div>
               </div>
-            </ToggleCard>
+            </ToggleCard> -->
           </div>
         </div>
       </template>
@@ -444,12 +443,12 @@ const loadCategories = async () => {
     categories.value = response.data.data || response.data;
   } catch (error) {
     console.error('Error loading categories:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Falha ao carregar categorias',
-      life: 3000
-    });
+    // toast.add({
+    //   severity: 'error',
+    //   summary: 'Erro',
+    //   detail: 'Falha ao carregar categorias',
+    //   life: 3000
+    // });
   } finally {
     isLoadingCategories.value = false;
   }
