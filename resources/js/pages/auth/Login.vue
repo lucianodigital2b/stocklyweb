@@ -200,6 +200,7 @@ const form = reactive(new Form({
 
 // Login
 async function login () {
+  console.log('log')
   try {
     // Clear previous error message
     errorMessage.value = ''

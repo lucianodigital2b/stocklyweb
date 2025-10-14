@@ -62,6 +62,14 @@ axios.interceptors.response.use(response => {
   // Check for 401 status OR "Unauthenticated." message
   if (status === 401 || (responseData && responseData.message === "Unauthenticated.")) {
     console.log('Authentication error detected, logging out and redirecting...');
+    
+    // Prevent infinite loops by checking if we're already on the login page
+    const currentPath = window.location.pathname;
+    if (currentPath === '/login') {
+      console.log('Already on login page, skipping redirect');
+      return Promise.reject(error);
+    }
+    
     store.logout();
     
     if (globalRouter.router) {

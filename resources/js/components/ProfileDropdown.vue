@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from '../plugins/axios';
+import { useAuthStore } from '../store/modules/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Dropdown state
 const isDropdownOpen = ref(false);
@@ -24,31 +27,31 @@ const handleLogout = async () => {
         // Close dropdown first
         closeDropdown();
         
-        // Make logout API call
-        const response = await fetch('/api/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            credentials: 'same-origin'
-        });
-
-        if (response.ok) {
+        // Make logout API call using axios (includes auth token automatically)
+        const response = await axios.post('/api/logout');
+        
+        // Only clear auth store after successful logout
+        if (response.status === 200) {
+            // Clear auth store
+            authStore.logout();
+            
             // Clear any local storage/session storage if needed
             localStorage.removeItem('auth_token');
             sessionStorage.clear();
             
             // Redirect to login page
             router.push({ name: 'login' });
-        } else {
-            console.error('Logout failed');
-            // Still redirect to login even if API call fails
-            router.push({ name: 'login' });
         }
     } catch (error) {
         console.error('Logout error:', error);
-        // Redirect to login page even on error
+        
+        // If logout fails, still clear local auth and redirect
+        // This handles cases where the server is unreachable
+        authStore.logout();
+        localStorage.removeItem('auth_token');
+        sessionStorage.clear();
+        
+        // Redirect to login page
         router.push({ name: 'login' });
     }
 };
