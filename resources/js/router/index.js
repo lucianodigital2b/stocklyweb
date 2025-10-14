@@ -33,6 +33,10 @@ router.beforeEach(async (to, from, next) => {
     } else if (isAuthenticated && authOnlyRoutes.includes(to.name)) {
         // Redirect authenticated users away from login/register pages only
         next({ name: 'dashboard' });
+    } else if (isAuthenticated && authStore.user && authStore.user.company_id === null && to.name !== 'onboarding') {
+        // Redirect authenticated users with null company_id to onboarding
+        console.log('User has null company_id, redirecting to onboarding from router guard...');
+        next({ name: 'onboarding' });
     } else {
         next();
     }
