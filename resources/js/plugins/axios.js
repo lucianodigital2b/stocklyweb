@@ -50,21 +50,6 @@ axios.interceptors.response.use(response => {
     })
   }
   
-  // Check if user has null company_id and redirect to onboarding
-  const store = useAuthStore();
-  if (store.isAuthenticated && store.user && store.user.company_id === null) {
-    const currentPath = window.location.pathname;
-    // Only redirect if not already on onboarding page
-    if (currentPath !== '/onboarding') {
-      console.log('User has null company_id, redirecting to onboarding...');
-      if (globalRouter.router) {
-        globalRouter.router.push({ name: 'onboarding' });
-      } else {
-        window.location.href = '/onboarding';
-      }
-    }
-  }
-  
   return response
 }, error => {
 

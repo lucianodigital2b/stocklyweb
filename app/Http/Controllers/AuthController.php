@@ -13,18 +13,40 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // Create the company first
+        $company = \App\Models\Company::create([
+            'name' => $request->company_name,
+            'status' => 'active',
+            'settings' => [],
+        ]);
+
+        // Create the user and associate with the company
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'company_id' => $company->id,
         ]);
 
+        // Create a default warehouse for the company
+        \App\Models\Warehouse::create([
+            'name' => 'Depósito Principal',
+            'status' => 1,
+            'company_id' => $company->id,
+        ]);
 
-        
+        // Create a default store for the company
+        \App\Models\Store::create([
+            'name' => $company->name . ' Store',
+            'domain' => strtolower(str_replace(' ', '', $company->name)) . '.store',
+            'company_id' => $company->id,
+        ]);
+
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 

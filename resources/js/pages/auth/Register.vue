@@ -44,6 +44,17 @@
           
           <div class="field">
             <InputText 
+              v-model="form.company_name" 
+              placeholder="Nome da empresa" 
+              class="w-full"
+              :class="{ 'p-invalid': form.errors.has('company_name') }"
+              required
+            />
+            <has-error :form="form" field="company_name" />
+          </div>
+          
+          <div class="field">
+            <InputText 
               v-model="form.email" 
               type="email" 
               placeholder="seu@email.com" 
@@ -210,6 +221,7 @@ const errorMessage = ref('')
 // Form
 const form = reactive(new Form({
   name: '',
+  company_name: '',
   email: '',
   password: '',
   password_confirmation: ''
@@ -238,8 +250,8 @@ const register = async () => {
       user: loginData.data.user,
     })
 
-    // Redirect to onboarding instead of dashboard
-    router.push({ name: 'onboarding' })
+    // Redirect to dashboard instead of onboarding
+    router.push({ name: 'dashboard' })
   } catch (error) {
     console.log('Registration error:', error)
 

@@ -19,13 +19,13 @@ router.beforeEach(async (to, from, next) => {
     const isAuthenticated = authStore.isAuthenticated;
     
     // Define routes that don't require authentication
-    const publicRoutes = ['login', 'register', 'password.request', 'password.reset', 'verification.verify', 'verification.resend'];
+    const publicRoutes = ['login', 'register', 'onboarding', 'password.request', 'password.reset', 'verification.verify', 'verification.resend'];
     
     // Define routes that authenticated users should be redirected away from
     const authOnlyRoutes = ['login', 'register'];
     
     // Check if the route requires authentication
-    const requiresAuth = !publicRoutes.includes(to.name) && to.name !== 'onboarding';
+    const requiresAuth = !publicRoutes.includes(to.name);
     
     if (requiresAuth && !isAuthenticated) {
         // Redirect to login if not authenticated
@@ -33,10 +33,6 @@ router.beforeEach(async (to, from, next) => {
     } else if (isAuthenticated && authOnlyRoutes.includes(to.name)) {
         // Redirect authenticated users away from login/register pages only
         next({ name: 'dashboard' });
-    } else if (isAuthenticated && authStore.user && authStore.user.company_id === null && to.name !== 'onboarding') {
-        // Redirect authenticated users with null company_id to onboarding
-        console.log('User has null company_id, redirecting to onboarding from router guard...');
-        next({ name: 'onboarding' });
     } else {
         next();
     }
